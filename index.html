@@ -258,7 +258,7 @@ return null;
 async function fetchFRED(id) {
 try {
 const r = await fetch(
-`https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${FRED_KEY}&file_type=json&limit=5&sort_order=desc`
+`https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${0f8688eb7a57806433f880bf881a20b6}&file_type=json&limit=5&sort_order=desc`
 );
 const d = await r.json();
 const obs = d.observations?.filter(o => o.value !== '.');
