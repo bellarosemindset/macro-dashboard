@@ -10,159 +10,124 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
---bg: #0d0f14;
---bg2: #13161d;
---bg3: #1a1d26;
---border: rgba(255,255,255,0.07);
---border2: rgba(255,255,255,0.12);
---text: #e8eaf0;
---text2: #8a8fa8;
---text3: #555a72;
---green: #00d68f;
---green-dim: rgba(0,214,143,0.12);
---red: #ff6b6b;
---red-dim: rgba(255,107,107,0.12);
---amber: #ffb347;
---amber-dim: rgba(255,179,71,0.12);
---blue: #5b9cf6;
---blue-dim: rgba(91,156,246,0.12);
---accent: #7c6af7;
---accent-dim: rgba(124,106,247,0.15);
---radius: 12px;
---radius-sm: 8px;
+--bg: #0d0f14; --bg2: #13161d; --bg3: #1a1d26;
+--border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+--text: #e8eaf0; --text2: #8a8fa8; --text3: #555a72;
+--green: #00d68f; --green-dim: rgba(0,214,143,0.12);
+--red: #ff6b6b; --red-dim: rgba(255,107,107,0.12);
+--amber: #ffb347; --amber-dim: rgba(255,179,71,0.12);
+--blue: #5b9cf6; --accent: #7c6af7; --accent-dim: rgba(124,106,247,0.15);
+--radius: 12px; --radius-sm: 8px;
 }
-body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; padding: 0; }
-
+body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
 .header {
-background: var(–bg2); border-bottom: 1px solid var(–border);
+background: var(--bg2); border-bottom: 1px solid var(--border);
 padding: 18px 28px; display: flex; align-items: center;
 justify-content: space-between; flex-wrap: wrap; gap: 12px;
 position: sticky; top: 0; z-index: 100;
 }
 .header-left { display: flex; align-items: center; gap: 16px; }
-.pair-title { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; color: var(–text); }
-.pair-title span { color: var(–accent); }
+.pair-title { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; }
+.pair-title span { color: var(--accent); }
 .live-badge {
 display: flex; align-items: center; gap: 6px;
-background: var(–green-dim); border: 1px solid rgba(0,214,143,0.25);
-border-radius: 20px; padding: 4px 12px;
-font-size: 11px; font-weight: 600; color: var(–green); letter-spacing: 0.06em;
+background: var(--green-dim); border: 1px solid rgba(0,214,143,0.25);
+border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: var(--green);
 }
-.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(–green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
 .header-right { display: flex; align-items: center; gap: 12px; }
-.timestamp { font-family: ‘DM Mono’, monospace; font-size: 12px; color: var(–text3); }
+.timestamp { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); }
 .refresh-btn {
 display: flex; align-items: center; gap: 8px;
-background: var(–accent-dim); border: 1px solid rgba(124,106,247,0.3);
-color: var(–accent); border-radius: var(–radius-sm);
-padding: 8px 18px; font-family: ‘Syne’, sans-serif;
-font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em;
+background: var(--accent-dim); border: 1px solid rgba(124,106,247,0.3);
+color: var(--accent); border-radius: var(--radius-sm);
+padding: 8px 18px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+cursor: pointer; transition: all 0.2s;
 }
-.refresh-btn:hover { background: rgba(124,106,247,0.25); border-color: rgba(124,106,247,0.5); }
-.refresh-btn svg { transition: transform 0.6s; }
+.refresh-btn:hover { background: rgba(124,106,247,0.25); }
 .refresh-btn.spinning svg { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 .page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; }
-
 .signal-bar {
-background: var(–bg2); border: 1px solid var(–border);
-border-radius: var(–radius); padding: 20px 24px;
-display: flex; align-items: center; gap: 24px;
+background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+padding: 20px 24px; display: flex; align-items: center; gap: 24px;
 margin-bottom: 20px; position: relative; overflow: hidden;
 }
-.signal-bar::before { content: ‘’; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-.signal-bar.long::before { background: var(–green); }
-.signal-bar.short::before { background: var(–red); }
-.signal-bar.neutral::before { background: var(–text3); }
-.signal-badge { display: flex; flex-direction: column; align-items: center; min-width: 72px; }
-.signal-dir { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; padding: 4px 14px; border-radius: 20px; margin-bottom: 6px; }
-.signal-dir.long { background: var(–green-dim); color: var(–green); border: 1px solid rgba(0,214,143,0.3); }
-.signal-dir.short { background: var(–red-dim); color: var(–red); border: 1px solid rgba(255,107,107,0.3); }
-.signal-dir.neutral { background: rgba(138,143,168,0.15); color: var(–text2); border: 1px solid rgba(138,143,168,0.25); }
-.signal-score { font-family: ‘DM Mono’, monospace; font-size: 28px; font-weight: 500; color: var(–text); line-height: 1; }
-.signal-denom { font-size: 11px; color: var(–text3); margin-top: 2px; }
-.signal-conv { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; padding: 3px 10px; border-radius: 20px; margin-top: 6px; }
-.conv-high { background: var(–green-dim); color: var(–green); }
-.conv-med { background: var(–amber-dim); color: var(–amber); }
-.conv-low { background: var(–red-dim); color: var(–red); }
-.signal-divider { width: 1px; height: 60px; background: var(–border); flex-shrink: 0; }
-.signal-text { flex: 1; }
-.signal-headline { font-size: 15px; font-weight: 500; color: var(–text); line-height: 1.5; margin-bottom: 6px; }
-.signal-sub { font-size: 12px; color: var(–text2); line-height: 1.6; }
-.signal-sub strong { color: var(–text); font-weight: 600; }
-
-.metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.metric-card { background: var(–bg2); border: 1px solid var(–border); border-radius: var(–radius); padding: 16px 18px; }
-.metric-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; color: var(–text3); text-transform: uppercase; margin-bottom: 8px; }
-.metric-value { font-family: ‘DM Mono’, monospace; font-size: 22px; font-weight: 500; color: var(–text); line-height: 1; margin-bottom: 4px; }
-.metric-change { font-family: ‘DM Mono’, monospace; font-size: 12px; }
-.metric-change.pos { color: var(–green); }
-.metric-change.neg { color: var(–red); }
-.metric-change.neu { color: var(–text3); }
-.metric-tag { font-size: 10px; color: var(–text3); margin-top: 4px; }
-
-.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-@media (max-width: 680px) { .main-grid { grid-template-columns: 1fr; } }
-.card { background: var(–bg2); border: 1px solid var(–border); border-radius: var(–radius); padding: 18px 20px; }
+.signal-bar::before { content:''; position:absolute; left:0;top:0;bottom:0;width:3px; }
+.signal-bar.long::before { background: var(--green); }
+.signal-bar.short::before { background: var(--red); }
+.signal-bar.neutral::before { background: var(--text3); }
+.signal-badge { display:flex;flex-direction:column;align-items:center;min-width:72px; }
+.signal-dir { font-size:13px;font-weight:700;letter-spacing:.1em;padding:4px 14px;border-radius:20px;margin-bottom:6px; }
+.signal-dir.long { background:var(--green-dim);color:var(--green);border:1px solid rgba(0,214,143,.3); }
+.signal-dir.short { background:var(--red-dim);color:var(--red);border:1px solid rgba(255,107,107,.3); }
+.signal-dir.neutral { background:rgba(138,143,168,.15);color:var(--text2);border:1px solid rgba(138,143,168,.25); }
+.signal-score { font-family:'DM Mono',monospace;font-size:28px;font-weight:500;line-height:1; }
+.signal-denom { font-size:11px;color:var(--text3);margin-top:2px; }
+.signal-conv { font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 10px;border-radius:20px;margin-top:6px; }
+.conv-high{background:var(--green-dim);color:var(--green);}
+.conv-med{background:var(--amber-dim);color:var(--amber);}
+.conv-low{background:var(--red-dim);color:var(--red);}
+.signal-divider { width:1px;height:60px;background:var(--border);flex-shrink:0; }
+.signal-text { flex:1; }
+.signal-headline { font-size:15px;font-weight:500;line-height:1.5;margin-bottom:6px; }
+.signal-sub { font-size:12px;color:var(--text2);line-height:1.6; }
+.signal-sub strong { color:var(--text);font-weight:600; }
+.metrics-row { display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px; }
+.metric-card { background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+.metric-label { font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:8px; }
+.metric-value { font-family:'DM Mono',monospace;font-size:22px;font-weight:500;line-height:1;margin-bottom:4px; }
+.metric-change { font-family:'DM Mono',monospace;font-size:12px; }
+.metric-change.pos{color:var(--green)}.metric-change.neg{color:var(--red)}.metric-change.neu{color:var(--text3)}
+.metric-tag { font-size:10px;color:var(--text3);margin-top:4px; }
+.main-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px; }
+@media(max-width:680px){.main-grid{grid-template-columns:1fr}}
+.card { background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px; }
 .card-title {
-font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(–text3);
-display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
-padding-bottom: 10px; border-bottom: 1px solid var(–border);
+font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);
+display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);
 }
-.card-title-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.dot-blue { background: var(–blue); }
-.dot-green { background: var(–green); }
-.dot-amber { background: var(–amber); }
-.dot-accent { background: var(–accent); }
-.status-badge { margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 20px; }
-.status-live { background: var(–green-dim); color: var(–green); }
-.status-err { background: var(–red-dim); color: var(–red); }
-.status-lag { background: var(–amber-dim); color: var(–amber); }
-
-.spread-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(–border); }
-.spread-row:last-child { border-bottom: none; }
-.spread-row.section-start { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(–border2); }
-.spread-name { font-size: 12px; color: var(–text2); }
-.spread-val { font-family: ‘DM Mono’, monospace; font-size: 13px; font-weight: 500; color: var(–text); }
-.spread-val.pos { color: var(–green); }
-.spread-val.neg { color: var(–red); }
-.spread-val.highlight { color: var(–amber); }
-
-.sd-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 6px; margin-bottom: 3px; }
-.sd-row.current { background: var(–accent-dim); border: 1px solid rgba(124,106,247,0.2); }
-.sd-row.mean { background: rgba(255,255,255,0.03); }
-.sd-label { font-size: 12px; color: var(–text2); }
-.sd-val { font-family: ‘DM Mono’, monospace; font-size: 13px; font-weight: 500; }
-
-.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-@media (max-width: 680px) { .analysis-grid { grid-template-columns: 1fr; } }
-.analysis-card { background: var(–bg2); border: 1px solid var(–border); border-radius: var(–radius); padding: 16px 18px; }
-.analysis-card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(–text3); margin-bottom: 10px; }
-.analysis-card-body { font-size: 13px; color: var(–text2); line-height: 1.7; }
-.analysis-card-body strong { color: var(–text); font-weight: 600; }
-
-.ai-card { background: var(–bg2); border: 1px solid var(–border); border-radius: var(–radius); padding: 20px 24px; margin-bottom: 20px; }
-.ai-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(–border); }
-.ai-card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(–text3); display: flex; align-items: center; gap: 8px; }
-.ai-icon { width: 22px; height: 22px; border-radius: 6px; background: var(–accent-dim); border: 1px solid rgba(124,106,247,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; }
-.ai-body { font-size: 13px; color: var(–text2); line-height: 1.8; }
-.ai-body strong { color: var(–text); font-weight: 600; }
-.levels-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
-.level-pill { font-family: ‘DM Mono’, monospace; font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 1px solid var(–border2); color: var(–text2); background: var(–bg3); }
-.level-pill.support { border-color: rgba(0,214,143,0.25); color: var(–green); background: var(–green-dim); }
-.level-pill.resist { border-color: rgba(255,107,107,0.25); color: var(–red); background: var(–red-dim); }
-
-.data-note { background: var(–amber-dim); border: 1px solid rgba(255,179,71,0.2); border-radius: var(–radius-sm); padding: 10px 14px; font-size: 12px; color: var(–amber); margin-bottom: 16px; line-height: 1.6; }
-
-.footer { text-align: center; font-size: 11px; color: var(–text3); line-height: 1.8; padding-top: 16px; border-top: 1px solid var(–border); }
-.loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 20px; color: var(–text2); font-size: 13px; }
-.spinner { width: 28px; height: 28px; border: 2px solid var(–border2); border-top-color: var(–accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-.loading-step { color: var(–text3); font-size: 12px; font-family: ‘DM Mono’, monospace; }
-.error-note { font-size: 12px; color: var(–red); opacity: 0.8; }
+.card-title-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dot-blue{background:var(--blue)}.dot-green{background:var(--green)}
+.status-badge{margin-left:auto;font-size:10px;font-weight:600;letter-spacing:.06em;padding:2px 8px;border-radius:20px;}
+.status-live{background:var(--green-dim);color:var(--green);}
+.status-err{background:var(--red-dim);color:var(--red);}
+.status-lag{background:var(--amber-dim);color:var(--amber);}
+.spread-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.spread-row:last-child{border-bottom:none;}
+.spread-row.section-start{margin-top:4px;padding-top:10px;border-top:1px solid var(--border2);}
+.spread-name{font-size:12px;color:var(--text2);}
+.spread-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+.spread-val.pos{color:var(--green)}.spread-val.neg{color:var(--red)}.spread-val.highlight{color:var(--amber)}
+.sd-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;margin-bottom:3px;}
+.sd-row.current{background:var(--accent-dim);border:1px solid rgba(124,106,247,.2);}
+.sd-row.mean{background:rgba(255,255,255,.03);}
+.sd-label{font-size:12px;color:var(--text2);}
+.sd-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+@media(max-width:680px){.analysis-grid{grid-template-columns:1fr}}
+.analysis-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.analysis-card-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.analysis-card-body{font-size:13px;color:var(--text2);line-height:1.7;}
+.analysis-card-body strong{color:var(--text);font-weight:600;}
+.ai-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:20px;}
+.ai-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.ai-card-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:8px;}
+.ai-icon{width:22px;height:22px;border-radius:6px;background:var(--accent-dim);border:1px solid rgba(124,106,247,.3);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.ai-body{font-size:13px;color:var(--text2);line-height:1.8;}
+.ai-body strong{color:var(--text);font-weight:600;}
+.levels-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.level-pill{font-family:'DM Mono',monospace;font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--border2);color:var(--text2);background:var(--bg3);}
+.level-pill.support{border-color:rgba(0,214,143,.25);color:var(--green);background:var(--green-dim);}
+.level-pill.resist{border-color:rgba(255,107,107,.25);color:var(--red);background:var(--red-dim);}
+.data-note{background:var(--amber-dim);border:1px solid rgba(255,179,71,.2);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:16px;line-height:1.6;}
+.footer{text-align:center;font-size:11px;color:var(--text3);line-height:1.8;padding-top:16px;border-top:1px solid var(--border);}
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 20px;color:var(--text2);font-size:13px;}
+.spinner{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+.loading-step{color:var(--text3);font-size:12px;font-family:'DM Mono',monospace;}
+.error-note{font-size:12px;color:var(--red);opacity:.8;}
 </style>
-
 </head>
 <body>
 
@@ -197,76 +162,76 @@ Refresh
 
 <script>
 const FRED_KEY = 'b2b3bbae5e2c732c442f2e1f6b7766b9';
+// Public CORS proxy — routes requests through server-side to bypass browser blocks
+const PROXY = 'https://corsproxy.io/?url=';
 
-// ── EUR/USD via Frankfurter (CORS-friendly, free, no key) ──────────────────
+async function proxyFetch(url, timeoutMs = 12000) {
+const controller = new AbortController();
+const timer = setTimeout(() => controller.abort(), timeoutMs);
+try {
+// Try direct first (works if API allows it)
+const r = await fetch(url, { signal: controller.signal });
+clearTimeout(timer);
+if (r.ok) return r;
+} catch(e) {}
+// Fall back to CORS proxy
+clearTimeout(timer);
+const c2 = new AbortController();
+const t2 = setTimeout(() => c2.abort(), timeoutMs);
+try {
+const r2 = await fetch(PROXY + encodeURIComponent(url), { signal: c2.signal });
+clearTimeout(t2);
+return r2;
+} catch(e) {
+clearTimeout(t2);
+throw e;
+}
+}
+
 async function fetchEURUSD() {
 try {
-// Get latest rate
+const today = new Date();
+const from = new Date(today); from.setMonth(from.getMonth() - 3);
+const fmt = d => d.toISOString().split('T')[0];
 const [latestRes, histRes] = await Promise.all([
-fetch('https://api.frankfurter.app/latest?from=EUR&to=USD'),
-fetch('https://api.frankfurter.app/2024-01-01..?from=EUR&to=USD')
+proxyFetch('https://api.frankfurter.app/latest?from=EUR&to=USD'),
+proxyFetch(`https://api.frankfurter.app/${fmt(from)}..${fmt(today)}?from=EUR&to=USD`)
 ]);
 const latest = await latestRes.json();
 const hist = await histRes.json();
-
 const price = latest.rates.USD;
 const dates = Object.keys(hist.rates).sort();
 const closes = dates.map(d => hist.rates[d].USD);
-
-// Previous day close for change calc
 const prev = closes.length >= 2 ? closes[closes.length - 2] : price;
-const change = price - prev;
-const pct = ((price - prev) / prev) * 100;
-
-return { price, prev, change, pct, high: price, low: price, closes };
-} catch(e) {
-console.error('EUR/USD fetch failed:', e);
-return null;
-}
+return { price, prev, change: price - prev, pct: ((price - prev) / prev) * 100, high: price, low: price, closes };
+} catch(e) { console.error('EUR/USD:', e); return null; }
 }
 
-// ── stooq CSV — works from browsers (no CORS block) ───────────────────────
-async function fetchStooq(symbol) {
+async function fetchYahoo(ticker) {
 try {
-const url = `https://stooq.com/q/d/l/?s=${symbol}&i=d`;
-const r = await fetch(url);
-const text = await r.text();
-const lines = text.trim().split('\n');
-if (lines.length < 2) return null;
-
-const parseRow = line => {
-const cols = line.split(',');
-return { date: cols[0], open: +cols[1], high: +cols[2], low: +cols[3], close: +cols[4] };
-};
-
-const rows = lines.slice(1).map(parseRow).filter(r => !isNaN(r.close));
-if (!rows.length) return null;
-
-const last = rows[rows.length - 1];
-const prev = rows.length > 1 ? rows[rows.length - 2].close : last.close;
-const change = last.close - prev;
-const pct = ((last.close - prev) / prev) * 100;
-
-return { price: last.close, prev, change, pct, high: last.high, low: last.low };
-} catch(e) {
-console.error(`stooq fetch failed for ${symbol}:`, e);
-return null;
-}
+const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=5d`;
+const r = await proxyFetch(url);
+const d = await r.json();
+const q = d.chart.result[0];
+const closes = q.indicators.quote[0].close.filter(v => v != null);
+const highs = q.indicators.quote[0].high.filter(v => v != null);
+const lows = q.indicators.quote[0].low.filter(v => v != null);
+const i = closes.length - 1;
+const curr = closes[i], prev = closes[i - 1] ?? curr;
+return { price: curr, prev, change: curr - prev, pct: ((curr - prev) / prev) * 100, high: highs[i], low: lows[i] };
+} catch(e) { console.error(`Yahoo ${ticker}:`, e); return null; }
 }
 
-// ── FRED ──────────────────────────────────────────────────────────────────
 async function fetchFRED(id) {
 try {
-const r = await fetch(
-`https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${0f8688eb7a57806433f880bf881a20b6}&file_type=json&limit=5&sort_order=desc`
-);
+const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${b2b3bbae5e2c732c442f2e1f6b7766b9}&file_type=json&limit=5&sort_order=desc`;
+const r = await proxyFetch(url);
 const d = await r.json();
 const obs = d.observations?.filter(o => o.value !== '.');
 return obs?.length ? parseFloat(obs[0].value) : null;
 } catch(e) { return null; }
 }
 
-// ── Calculations ──────────────────────────────────────────────────────────
 function calcRSI(prices, period = 14) {
 if (!prices || prices.length < period + 1) return null;
 let gains = 0, losses = 0;
@@ -282,7 +247,7 @@ function calcStats(prices, window = 20) {
 if (!prices || prices.length < window) return null;
 const slice = prices.slice(-window);
 const mean = slice.reduce((a, b) => a + b, 0) / slice.length;
-const sd = Math.sqrt(slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / slice.length);
+const sd = Math.sqrt(slice.reduce((a, b) => a + (b - mean) ** 2, 0) / slice.length);
 return {
 mean: +mean.toFixed(5), sd: +sd.toFixed(5),
 p1up: +(mean + sd).toFixed(5), p2up: +(mean + sd * 2).toFixed(5),
@@ -290,11 +255,9 @@ p1dn: +(mean - sd).toFixed(5), p2dn: +(mean - sd * 2).toFixed(5),
 };
 }
 
-// ── Claude AI Analysis ────────────────────────────────────────────────────
 async function callClaude(data) {
 const { eurusd, dxy, vix, rsi, stats, us10y, us2y, de10y, de2y, usCurve, spread10y, spread2y } = data;
 const prompt = `You are a professional FX analyst specialising in EUR/USD mean reversion day trading.
-
 LIVE DATA:
 - EUR/USD: ${eurusd?.price?.toFixed(5)} (${eurusd?.pct > 0 ? '+' : ''}${eurusd?.pct?.toFixed(2)}%)
 - RSI(14): ${rsi}
@@ -307,45 +270,21 @@ LIVE DATA:
 - US-DE 2Y spread: ${spread2y?.toFixed(0)}bp
 - DXY: ${dxy?.price?.toFixed(2)} (${dxy?.pct?.toFixed(2)}%)
 - VIX: ${vix?.price?.toFixed(1)}
-
-Trader is a mean reversion day trader using standard deviation levels for entries.
-Key principle: wider US-DE spread = USD strength = EUR/USD bearish pressure.
-
-Reply ONLY with valid JSON, no markdown, no explanation:
-{
-"direction": "LONG or SHORT or NEUTRAL",
-"score": 1-10,
-"conviction": "LOW or MEDIUM or HIGH",
-"headline": "max 18 words",
-"regime": "TRENDING or RANGING or VOLATILE",
-"regime_note": "one sentence",
-"macro_note": "one sentence on yield spread implication",
-"sd_note": "one sentence on SD band position and mean reversion opportunity",
-"risk_note": "one sentence on main risk today",
-"support1": "5 decimal price level",
-"support2": "5 decimal price level",
-"resistance1": "5 decimal price level",
-"resistance2": "5 decimal price level",
-"watch": "one thing to monitor today"
-}`;
+Reply ONLY with valid JSON, no markdown:
+{"direction":"LONG or SHORT or NEUTRAL","score":1,"conviction":"LOW or MEDIUM or HIGH","headline":"max 18 words","regime":"TRENDING or RANGING or VOLATILE","regime_note":"one sentence","macro_note":"one sentence","sd_note":"one sentence","risk_note":"one sentence","support1":"5dp price","support2":"5dp price","resistance1":"5dp price","resistance2":"5dp price","watch":"one thing to monitor"}`;
 
 const resp = await fetch('https://api.anthropic.com/v1/messages', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-model: 'claude-sonnet-4-20250514',
-max_tokens: 1000,
-messages: [{ role: 'user', content: prompt }]
-})
+body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
 });
 const json = await resp.json();
 const text = json.content?.[0]?.text || '';
 return JSON.parse(text.replace(/```json|```/g, '').trim());
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
-const f = (n, d = 2) => n != null ? n.toFixed(d) : '—';
-const fp = (n, d = 5) => n != null ? n.toFixed(d) : '—';
+const f = (n, d=2) => n != null ? n.toFixed(d) : '—';
+const fp = (n, d=5) => n != null ? n.toFixed(d) : '—';
 const pct = p => p != null ? (p > 0 ? '+' : '') + p.toFixed(2) + '%' : '—';
 const bp = v => v != null ? (v > 0 ? '+' : '') + v.toFixed(0) + 'bp' : '—';
 const cc = v => v > 0 ? 'pos' : v < 0 ? 'neg' : 'neu';
@@ -360,48 +299,39 @@ if (z < -0.8) return 'Below mean — oversold';
 return 'Near mean — neutral';
 }
 
-// ── Main load ─────────────────────────────────────────────────────────────
 async function loadAll() {
 const btn = document.getElementById('refreshBtn');
 btn.classList.add('spinning');
 document.getElementById('mainContent').innerHTML = `
-<div class="loading-screen">
-<div class="spinner"></div>
+<div class="loading-screen"><div class="spinner"></div>
 <div>Fetching live prices & yields…</div>
-<div class="loading-step">EUR/USD via Frankfurter · DXY & VIX via stooq · Yields via FRED</div>
-</div>`;
+<div class="loading-step">EUR/USD · DXY · VIX · FRED yields (via proxy)</div></div>`;
 
-// Fetch all in parallel
-const [eurusdRaw, dxy, vix, us10y, us2y, de10y, de2y] = await Promise.all([
+const [eurusd, dxy, vix, us10y, us2y, de10y, de2y] = await Promise.all([
 fetchEURUSD(),
-fetchStooq('dxy'), // DXY Dollar Index
-fetchStooq('^vix'), // VIX
+fetchYahoo('DX-Y.NYB'),
+fetchYahoo('^VIX'),
 fetchFRED('GS10'),
 fetchFRED('GS2'),
 fetchFRED('IRLTLT01DEM156N'),
 fetchFRED('IRLTLT01DEM028N'),
 ]);
 
-const eurusd = eurusdRaw;
-const closes = eurusdRaw?.closes || [];
+const closes = eurusd?.closes || [];
 const rsi = calcRSI(closes);
 const stats = calcStats(closes, 20);
-
 const usCurve = us10y != null && us2y != null ? (us10y - us2y) * 100 : null;
 const spread10y = us10y != null && de10y != null ? (us10y - de10y) * 100 : null;
 const spread2y = us2y != null && de2y != null ? (us2y - de2y) * 100 : null;
-
 const data = { eurusd, dxy, vix, rsi, stats, us10y, us2y, de10y, de2y, usCurve, spread10y, spread2y };
 
 document.getElementById('mainContent').innerHTML = `
-<div class="loading-screen">
-<div class="spinner"></div>
+<div class="loading-screen"><div class="spinner"></div>
 <div>Running AI signal analysis…</div>
-<div class="loading-step">Interpreting macro data for mean reversion signal</div>
-</div>`;
+<div class="loading-step">Sending macro data to Claude</div></div>`;
 
 let ai = null;
-try { ai = await callClaude(data); } catch(e) { console.error('Claude error:', e); }
+try { ai = await callClaude(data); } catch(e) { console.error('Claude:', e); }
 
 btn.classList.remove('spinning');
 document.getElementById('ts').textContent = new Date().toLocaleString('en-GB', {
@@ -414,23 +344,11 @@ const conv = ai?.conviction || 'MEDIUM';
 const convCls = conv === 'HIGH' ? 'conv-high' : conv === 'LOW' ? 'conv-low' : 'conv-med';
 const fredOk = us10y != null;
 const sdPos = sdPosition(eurusd?.price, stats);
-
-// Warn if data sources partially failed
-const missingWarnings = [];
-if (!eurusd) missingWarnings.push('EUR/USD (Frankfurter)');
-if (!dxy) missingWarnings.push('DXY (stooq)');
-if (!vix) missingWarnings.push('VIX (stooq)');
-if (!fredOk) missingWarnings.push('Yields (FRED)');
+const missing = [!eurusd&&'EUR/USD', !dxy&&'DXY', !vix&&'VIX', !fredOk&&'Yields'].filter(Boolean);
 
 document.getElementById('mainContent').innerHTML = `
+${missing.length ? `<div class="data-note">⚠️ Still unavailable: <strong>${missing.join(', ')}</strong>. Markets may be closed or proxy temporarily down. Try refreshing in a minute.</div>` : ''}
 
-${missingWarnings.length ? `
-<div class="data-note">
-⚠️ Some data sources are unavailable: <strong>${missingWarnings.join(', ')}</strong>.
-This may be due to market hours or a temporary outage. Try refreshing.
-</div>` : ''}
-
-<!-- SIGNAL BAR -->
 <div class="signal-bar ${dirClass}">
 <div class="signal-badge">
 <div class="signal-dir ${dirClass}">${dir}</div>
@@ -441,19 +359,16 @@ This may be due to market hours or a temporary outage. Try refreshing.
 <div class="signal-divider"></div>
 <div class="signal-text">
 <div class="signal-headline">${ai?.headline || 'EUR/USD macro mean reversion analysis'}</div>
-<div class="signal-sub">
-Regime: <strong>${ai?.regime || '—'}</strong> &nbsp;·&nbsp; ${ai?.regime_note || ''}
-</div>
+<div class="signal-sub">Regime: <strong>${ai?.regime || '—'}</strong> &nbsp;·&nbsp; ${ai?.regime_note || ''}</div>
 </div>
 </div>
 
-<!-- METRIC CARDS -->
 <div class="metrics-row">
 <div class="metric-card">
 <div class="metric-label">EUR / USD</div>
 <div class="metric-value">${eurusd ? eurusd.price.toFixed(5) : '—'}</div>
 <div class="metric-change ${cc(eurusd?.pct)}">${pct(eurusd?.pct)}</div>
-<div class="metric-tag">via Frankfurter API</div>
+<div class="metric-tag">Frankfurter API</div>
 </div>
 <div class="metric-card">
 <div class="metric-label">RSI (14)</div>
@@ -475,14 +390,10 @@ Regime: <strong>${ai?.regime || '—'}</strong> &nbsp;·&nbsp; ${ai?.regime_note
 </div>
 </div>
 
-<!-- MAIN DATA GRID -->
 <div class="main-grid">
-
-<!-- YIELD SPREADS -->
 <div class="card">
 <div class="card-title">
-<span class="card-title-dot dot-blue"></span>
-Yield spreads
+<span class="card-title-dot dot-blue"></span>Yield spreads
 <span class="status-badge ${fredOk ? 'status-lag' : 'status-err'}">${fredOk ? '1-DAY LAG' : 'ERROR'}</span>
 </div>
 <div class="spread-row"><span class="spread-name">US 10Y</span><span class="spread-val">${f(us10y)}%</span></div>
@@ -490,54 +401,43 @@ Yield spreads
 <div class="spread-row"><span class="spread-name">DE 10Y</span><span class="spread-val">${f(de10y)}%</span></div>
 <div class="spread-row"><span class="spread-name">DE 2Y</span><span class="spread-val">${f(de2y)}%</span></div>
 <div class="spread-row section-start">
-<span class="spread-name">US curve (10Y – 2Y)</span>
+<span class="spread-name">US curve (10Y–2Y)</span>
 <span class="spread-val ${usCurve > 0 ? 'pos' : 'neg'}">${bp(usCurve)}</span>
 </div>
 <div class="spread-row">
-<span class="spread-name">US – DE 10Y spread</span>
+<span class="spread-name">US–DE 10Y spread</span>
 <span class="spread-val highlight">${bp(spread10y)}</span>
 </div>
 <div class="spread-row">
-<span class="spread-name">US – DE 2Y spread</span>
+<span class="spread-name">US–DE 2Y spread</span>
 <span class="spread-val highlight">${bp(spread2y)}</span>
 </div>
 </div>
 
-<!-- SD LEVELS -->
 <div class="card">
-<div class="card-title">
-<span class="card-title-dot dot-green"></span>
-Mean reversion levels (20-day)
+<div class="card-title"><span class="card-title-dot dot-green"></span>Mean reversion levels (20-day)</div>
+<div class="sd-row" style="background:var(--red-dim);border:1px solid rgba(255,107,107,.2);">
+<span class="sd-label">+2 SD — extreme</span><span class="sd-val" style="color:var(--red)">${fp(stats?.p2up)}</span>
 </div>
-<div class="sd-row" style="background:var(--red-dim);border:1px solid rgba(255,107,107,0.2);">
-<span class="sd-label">+2 SD — extreme</span>
-<span class="sd-val" style="color:var(--red)">${fp(stats?.p2up)}</span>
-</div>
-<div class="sd-row" style="background:rgba(255,107,107,0.06);">
-<span class="sd-label">+1 SD — sell zone</span>
-<span class="sd-val" style="color:var(--red)">${fp(stats?.p1up)}</span>
+<div class="sd-row" style="background:rgba(255,107,107,.06);">
+<span class="sd-label">+1 SD — sell zone</span><span class="sd-val" style="color:var(--red)">${fp(stats?.p1up)}</span>
 </div>
 <div class="sd-row mean">
-<span class="sd-label">20-day mean</span>
-<span class="sd-val" style="color:var(--amber)">${fp(stats?.mean)}</span>
+<span class="sd-label">20-day mean</span><span class="sd-val" style="color:var(--amber)">${fp(stats?.mean)}</span>
 </div>
 <div class="sd-row current">
 <span class="sd-label" style="color:#c5bfff">▶ Current price</span>
 <span class="sd-val" style="color:#c5bfff">${eurusd ? eurusd.price.toFixed(5) : '—'}</span>
 </div>
-<div class="sd-row" style="background:rgba(0,214,143,0.06);">
-<span class="sd-label">-1 SD — buy zone</span>
-<span class="sd-val" style="color:var(--green)">${fp(stats?.p1dn)}</span>
+<div class="sd-row" style="background:rgba(0,214,143,.06);">
+<span class="sd-label">-1 SD — buy zone</span><span class="sd-val" style="color:var(--green)">${fp(stats?.p1dn)}</span>
 </div>
-<div class="sd-row" style="background:var(--green-dim);border:1px solid rgba(0,214,143,0.2);">
-<span class="sd-label">-2 SD — extreme</span>
-<span class="sd-val" style="color:var(--green)">${fp(stats?.p2dn)}</span>
+<div class="sd-row" style="background:var(--green-dim);border:1px solid rgba(0,214,143,.2);">
+<span class="sd-label">-2 SD — extreme</span><span class="sd-val" style="color:var(--green)">${fp(stats?.p2dn)}</span>
 </div>
 </div>
-
 </div>
 
-<!-- ANALYSIS CARDS -->
 <div class="analysis-grid">
 <div class="analysis-card">
 <div class="analysis-card-title">📊 Macro read</div>
@@ -549,33 +449,26 @@ Mean reversion levels (20-day)
 </div>
 </div>
 
-<!-- AI SIGNAL SUMMARY -->
 <div class="ai-card">
 <div class="ai-card-header">
-<div class="ai-card-title">
-<div class="ai-icon">✦</div>
-AI Signal Summary
-</div>
+<div class="ai-card-title"><div class="ai-icon">✦</div>AI Signal Summary</div>
 </div>
 <div class="ai-body">
-${ai ? `
-<strong>Risk:</strong> ${ai.risk_note}<br>
-<strong>Watch today:</strong> ${ai.watch}
-` : '<span class="error-note">AI analysis unavailable — check your internet connection and try refreshing.</span>'}
+${ai ? `<strong>Risk:</strong> ${ai.risk_note}<br><strong>Watch today:</strong> ${ai.watch}` :
+'<span class="error-note">AI analysis unavailable. Check your internet connection and try refreshing.</span>'}
 <div class="levels-row">
 ${ai ? `
 <span class="level-pill support">S2 ${ai.support2}</span>
 <span class="level-pill support">S1 ${ai.support1}</span>
 <span class="level-pill resist">R1 ${ai.resistance1}</span>
-<span class="level-pill resist">R2 ${ai.resistance2}</span>
-` : ''}
+<span class="level-pill resist">R2 ${ai.resistance2}</span>` : ''}
 </div>
 </div>
 </div>
 
 <div class="footer">
-EUR/USD from Frankfurter API &nbsp;·&nbsp; DXY & VIX from stooq (end-of-day) &nbsp;·&nbsp; FRED yields have a 1-day data lag<br>
-This dashboard is for informational purposes only and does not constitute financial advice.
+EUR/USD · Frankfurter API &nbsp;·&nbsp; DXY & VIX · Yahoo Finance (via corsproxy.io) &nbsp;·&nbsp; Yields · FRED (1-day lag)<br>
+For informational purposes only. Not financial advice.
 </div>
 `;
 }
