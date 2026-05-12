@@ -1,1 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EUR/USD Macro Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0f14; --bg2: #13161d; --bg3: #1a1d26;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0; --text2: #8a8fa8; --text3: #555a72;
+  --green: #00d68f; --green-dim: rgba(0,214,143,0.12);
+  --red: #ff6b6b; --red-dim: rgba(255,107,107,0.12);
+  --amber: #ffb347; --amber-dim: rgba(255,179,71,0.12);
+  --blue: #5b9cf6; --blue-dim: rgba(91,156,246,0.12);
+  --accent: #7c6af7; --accent-dim: rgba(124,106,247,0.15);
+  --pink: #f06292; --pink-dim: rgba(240,98,146,0.12);
+  --radius: 12px; --radius-sm: 8px;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
 
+/* ── HEADER ── */
+.header {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 18px 28px; display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.pair-title { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; }
+.pair-title span { color: var(--accent); }
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--green-dim); border: 1px solid rgba(0,214,143,0.25);
+  border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: var(--green);
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.timestamp { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); }
+.refresh-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--accent-dim); border: 1px solid rgba(124,106,247,0.3);
+  color: var(--accent); border-radius: var(--radius-sm);
+  padding: 8px 18px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.refresh-btn:hover { background: rgba(124,106,247,0.25); }
+.refresh-btn.spinning svg { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── LAYOUT ── */
+.page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; }
+.metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; margin-bottom: 20px; }
+.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.wide-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.regime-risk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+@media(max-width:900px){ .wide-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:680px){ .main-grid, .regime-risk-row, .analysis-grid, .wide-grid { grid-template-columns: 1fr; } }
+
+/* ── CARDS ── */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+.card-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.card-title-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot-blue { background: var(--blue); } .dot-green { background: var(--green); }
+.dot-amber { background: var(--amber); } .dot-pink { background: var(--pink); }
+.status-badge { margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: .06em; padding: 2px 8px; border-radius: 20px; }
+.status-live { background: var(--green-dim); color: var(--green); }
+.status-err  { background: var(--red-dim);   color: var(--red);   }
+.status-lag  { background: var(--amber-dim); color: var(--amber); }
+
+/* ── METRIC CARDS ── */
+.metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.metric-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; }
+.metric-value { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; line-height: 1; margin-bottom: 4px; }
+.metric-change { font-family: 'DM Mono', monospace; font-size: 12px; }
+.metric-change.pos { color: var(--green); } .metric-change.neg { color: var(--red); } .metric-change.neu { color: var(--text3); }
+.metric-tag { font-size: 10px; color: var(--text3); margin-top: 4px; }
+
+/* ── SPREAD ROWS ── */
+.spread-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.spread-row:last-child { border-bottom: none; }
+.spread-row.section-start { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--border2); }
+.spread-name { font-size: 12px; color: var(--text2); }
+.spread-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+.spread-val.pos { color: var(--green); } .spread-val.neg { color: var(--red); } .spread-val.highlight { color: var(--amber); }
+
+/* ── SD LEVELS ── */
+.sd-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 6px; margin-bottom: 3px; }
+.sd-row.current { background: var(--accent-dim); border: 1px solid rgba(124,106,247,.2); }
+.sd-row.mean { background: rgba(255,255,255,.03); }
+.sd-label { font-size: 12px; color: var(--text2); }
+.sd-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+
+/* ── REGIME / RISK ── */
+.regime-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+.regime-card-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+.regime-pill, .risk-pill {
+  display: inline-block; font-size: 15px; font-weight: 700; letter-spacing: .08em;
+  padding: 8px 22px; border-radius: 20px; margin-bottom: 8px;
+}
+.regime-goldilocks { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(0,214,143,.3); }
+.regime-reflation  { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(255,179,71,.3); }
+.regime-stagflation{ background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(255,107,107,.3); }
+.regime-deflation  { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(91,156,246,.3); }
+.regime-mixed      { background: rgba(138,143,168,.12); color: var(--text2); border: 1px solid rgba(138,143,168,.25); }
+.risk-on      { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,214,143,.3); }
+.risk-off     { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(255,107,107,.3); }
+.risk-neutral { background: rgba(138,143,168,.12); color: var(--text2); border: 1px solid rgba(138,143,168,.25); }
+.regime-note { font-size: 12px; color: var(--text2); line-height: 1.6; margin-top: 4px; }
+
+/* ── CARRY BAR ── */
+.carry-bar { height: 6px; border-radius: 3px; background: var(--bg3); margin: 10px 0; overflow: hidden; }
+.carry-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+
+/* ── ANALYSIS CARDS ── */
+.analysis-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.analysis-card-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.analysis-card-body { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.analysis-card-body strong { color: var(--text); font-weight: 600; }
+
+/* ── MISC ── */
+.data-note { background: var(--amber-dim); border: 1px solid rgba(255,179,71,.2); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--amber); margin-bottom: 16px; line-height: 1.6; }
+.footer { text-align: center; font-size: 11px; color: var(--text3); line-height: 1.8; padding-top: 16px; border-top: 1px solid var(--border); }
+.loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 20px; color: var(--text2); font-size: 13px; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+.loading-step { color: var(--text3); font-size: 12px; font-family: 'DM Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="pair-title">EUR<span>/</span>USD</div>
+    <div class="live-badge"><span class="live-dot"></span>LIVE DATA</div>
+  </div>
+  <div class="header-right">
+    <span class="timestamp" id="ts">—</span>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+        <path d="M8 16H3v5"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+</div>
+
+<div class="page">
+  <div id="mainContent">
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <div>Loading market data…</div>
+      <div class="loading-step">EUR/USD · DXY · VIX · S&amp;P 500 · AUD/JPY · HYG · Yields</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CORS PROXY ──────────────────────────────────────────────────────────────
+const PROXY = 'https://corsproxy.io/?url=';
+
+async function pfetch(url, ms = 12000) {
+  const go = (u) => {
+    const ac = new AbortController();
+    setTimeout(() => ac.abort(), ms);
+    return fetch(u, { signal: ac.signal });
+  };
+  try { const r = await go(url); if (r.ok) return r; } catch(e) {}
+  return go(PROXY + encodeURIComponent(url));
+}
+
+// ─── EUR/USD (Frankfurter — no CORS issues) ──────────────────────────────────
+async function fetchEURUSD() {
+  try {
+    const today = new Date();
+    const from = new Date(today); from.setMonth(from.getMonth() - 3);
+    const fmt = d => d.toISOString().split('T')[0];
+    const [lr, hr] = await Promise.all([
+      pfetch('https://api.frankfurter.app/latest?from=EUR&to=USD'),
+      pfetch(`https://api.frankfurter.app/${fmt(from)}..${fmt(today)}?from=EUR&to=USD`)
+    ]);
+    const latest = await lr.json();
+    const hist   = await hr.json();
+    const price  = latest.rates.USD;
+    const dates  = Object.keys(hist.rates).sort();
+    const closes = dates.map(d => hist.rates[d].USD);
+    const prev   = closes.length >= 2 ? closes[closes.length - 2] : price;
+    return { price, prev, change: price - prev, pct: ((price - prev) / prev) * 100, closes };
+  } catch(e) { console.error('EUR/USD:', e); return null; }
+}
+
+// ─── YAHOO FINANCE (DXY, VIX, SPX, AUD/JPY, HYG) ────────────────────────────
+async function fetchYahoo(ticker) {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=10d`;
+    const r = await pfetch(url);
+    const d = await r.json();
+    const q = d.chart.result[0];
+    const closes = q.indicators.quote[0].close.filter(v => v != null);
+    const i = closes.length - 1;
+    const curr = closes[i], prev = closes[i - 1] ?? curr;
+    return { price: curr, prev, change: curr - prev, pct: ((curr - prev) / prev) * 100, closes };
+  } catch(e) { console.error(`Yahoo ${ticker}:`, e); return null; }
+}
+
+// ─── US YIELDS via FRED ──────────────────────────────────────────────────────
+// Bug fix: API key must be a string literal in the URL, not a variable reference
+async function fetchFRED(seriesId) {
+  const key = 'b2b3bbae5e2c732c442f2e1f6b7766b9';
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${key}&file_type=json&limit=5&sort_order=desc`;
+  try {
+    const r = await pfetch(url);
+    const d = await r.json();
+    const obs = d.observations?.filter(o => o.value !== '.');
+    return obs?.length ? parseFloat(obs[0].value) : null;
+  } catch(e) { console.error(`FRED ${seriesId}:`, e); return null; }
+}
+
+// ─── GERMAN YIELDS via ECB Statistical Data Warehouse ────────────────────────
+// ECB SDW REST API: free, no key needed, CORS-friendly via proxy
+// Series keys: YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y  (10Y Bund par yield)
+//              YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y   (2Y Bund par yield)
+async function fetchECB(seriesKey) {
+  const url = `https://data-api.ecb.europa.eu/service/data/${seriesKey}?lastNObservations=5&format=jsondata`;
+  try {
+    const r = await pfetch(url);
+    const d = await r.json();
+    // Navigate ECB JSON structure
+    const series = d.dataSets?.[0]?.series;
+    if (!series) return null;
+    const key = Object.keys(series)[0];
+    const observations = series[key]?.observations;
+    if (!observations) return null;
+    // Get the latest non-null observation (sorted by index = time)
+    const indices = Object.keys(observations).map(Number).sort((a, b) => b - a);
+    for (const idx of indices) {
+      const val = observations[idx]?.[0];
+      if (val != null && val !== 'NaN') return parseFloat(val);
+    }
+    return null;
+  } catch(e) { console.error(`ECB ${seriesKey}:`, e); return null; }
+}
+
+// ─── CALCS ───────────────────────────────────────────────────────────────────
+function calcRSI(prices, period = 14) {
+  if (!prices || prices.length < period + 1) return null;
+  let gains = 0, losses = 0;
+  for (let i = prices.length - period; i < prices.length; i++) {
+    const d = prices[i] - prices[i - 1];
+    if (d > 0) gains += d; else losses += Math.abs(d);
+  }
+  const rs = (gains / period) / ((losses / period) || 0.0001);
+  return parseFloat((100 - 100 / (1 + rs)).toFixed(1));
+}
+
+function calcStats(prices, w = 20) {
+  if (!prices || prices.length < w) return null;
+  const s = prices.slice(-w);
+  const mean = s.reduce((a, b) => a + b, 0) / s.length;
+  const sd   = Math.sqrt(s.reduce((a, b) => a + (b - mean) ** 2, 0) / s.length);
+  return {
+    mean: +mean.toFixed(5), sd: +sd.toFixed(5),
+    p1up: +(mean + sd).toFixed(5),   p2up: +(mean + sd * 2).toFixed(5),
+    p1dn: +(mean - sd).toFixed(5),   p2dn: +(mean - sd * 2).toFixed(5),
+  };
+}
+
+// ─── REGIME DETECTION ────────────────────────────────────────────────────────
+function detectRegime(vix, spxPct, usCurve, dxyPct) {
+  const riskOff   = vix?.price > 25;
+  const spxUp     = spxPct != null && spxPct > 0;
+  const curvePos  = usCurve != null && usCurve > 0;
+  const dxyStrong = dxyPct != null && dxyPct > 0.3;
+  if (!riskOff && spxUp && curvePos && !dxyStrong)
+    return { regime: 'GOLDILOCKS',   cls: 'regime-goldilocks',  note: 'Growth without excessive inflation — equities rallying, USD soft, spreads tight.' };
+  if (!riskOff && spxUp && dxyStrong)
+    return { regime: 'REFLATION',    cls: 'regime-reflation',   note: 'Growth + rising inflation pressures — commodities bid, yields climbing, USD firm.' };
+  if (riskOff && !spxUp && dxyStrong)
+    return { regime: 'STAGFLATION',  cls: 'regime-stagflation', note: 'Growth slowing but inflation sticky — worst case for EUR/USD and risk assets.' };
+  if (riskOff && !spxUp && !dxyStrong)
+    return { regime: 'DEFLATION',    cls: 'regime-deflation',   note: 'Growth and inflation falling — bonds rally, equities under pressure, USD bid.' };
+  return { regime: 'MIXED',         cls: 'regime-mixed',       note: 'Conflicting signals — no clear macro regime established. Monitor closely.' };
+}
+
+function detectRisk(vix, spxPct) {
+  if (vix?.price > 25 || (spxPct != null && spxPct < -0.5))
+    return { env: 'RISK OFF', cls: 'risk-off',    note: 'Elevated volatility and/or equities declining. Defensive positioning favoured.' };
+  if (vix?.price != null && vix.price < 18 && spxPct != null && spxPct > 0.5)
+    return { env: 'RISK ON',  cls: 'risk-on',     note: 'Low volatility with equities rallying. Markets in appetite mode.' };
+  return { env: 'NEUTRAL',   cls: 'risk-neutral', note: 'Mixed signals — neither strongly risk-on nor risk-off.' };
+}
+
+function sdLabel(price, stats) {
+  if (!stats || !price) return 'Near mean';
+  const z = (price - stats.mean) / stats.sd;
+  if (z > 1.8) return 'At +2 SD — reversion zone';
+  if (z > 0.8) return 'Above mean — elevated';
+  if (z < -1.8) return 'At −2 SD — reversion zone';
+  if (z < -0.8) return 'Below mean — oversold';
+  return 'Near mean — neutral';
+}
+
+// ─── FORMAT HELPERS ──────────────────────────────────────────────────────────
+const f   = (n, d=2) => n != null ? n.toFixed(d) : '—';
+const fp  = (n, d=5) => n != null ? n.toFixed(d) : '—';
+const pct = p => p != null ? (p > 0 ? '+' : '') + p.toFixed(2) + '%' : '—';
+const bp  = v => v != null ? (v > 0 ? '+' : '') + v.toFixed(0) + 'bp' : '—';
+const cc  = v => v == null ? 'neu' : v > 0 ? 'pos' : v < 0 ? 'neg' : 'neu';
+
+// ─── MAIN ────────────────────────────────────────────────────────────────────
+async function loadAll() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('mainContent').innerHTML = `
+    <div class="loading-screen"><div class="spinner"></div>
+    <div>Fetching live market data…</div>
+    <div class="loading-step">EUR/USD · DXY · VIX · S&amp;P 500 · AUD/JPY · HYG · US Yields (FRED) · DE Yields (ECB)</div></div>`;
+
+  // Fetch everything in parallel
+  const [eurusd, dxy, vix, audjpy, spx, hyg, us10y, us2y, de10y, de2y] = await Promise.all([
+    fetchEURUSD(),
+    fetchYahoo('DX-Y.NYB'),
+    fetchYahoo('^VIX'),
+    fetchYahoo('AUDJPY=X'),
+    fetchYahoo('^GSPC'),
+    fetchYahoo('HYG'),
+    fetchFRED('GS10'),
+    fetchFRED('GS2'),
+    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'),
+    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'),
+  ]);
+
+  btn.classList.remove('spinning');
+  document.getElementById('ts').textContent = new Date().toLocaleString('en-GB', {
+    weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'
+  });
+
+  // Derived values
+  const closes   = eurusd?.closes || [];
+  const rsi      = calcRSI(closes);
+  const stats    = calcStats(closes, 20);
+  const usCurve  = us10y != null && us2y  != null ? (us10y - us2y)  * 100 : null;
+  const spread10 = us10y != null && de10y != null ? (us10y - de10y) * 100 : null;
+  const spread2  = us2y  != null && de2y  != null ? (us2y  - de2y)  * 100 : null;
+
+  const regime   = detectRegime(vix, spx?.pct, usCurve, dxy?.pct);
+  const riskEnv  = detectRisk(vix, spx?.pct);
+
+  // Carry signal
+  const carryPct = audjpy?.pct;
+  const carry = carryPct > 0.5
+    ? { label: 'CARRY POSITIVE', col: 'var(--green)', score: Math.min(92, 60 + carryPct * 10), note: 'AUD/JPY rising — risk appetite healthy, carry trades being added.' }
+    : carryPct < -0.5
+    ? { label: 'CARRY NEGATIVE', col: 'var(--red)',   score: Math.max(8,  40 + carryPct * 10), note: 'AUD/JPY falling — carry unwind in progress, risk-off pressure building.' }
+    : { label: 'CARRY NEUTRAL',  col: 'var(--amber)', score: 50,                                note: 'AUD/JPY flat — carry trades neither being added nor unwound.' };
+
+  // HY signal (HYG price ↑ = spreads tightening = risk on)
+  const hygPct = hyg?.pct;
+  const hy = hygPct > 0.3
+    ? { label: 'TIGHTENING', col: 'var(--green)', note: `HYG +${f(hygPct)}% — HY spreads tightening, credit risk appetite improving.` }
+    : hygPct < -0.3
+    ? { label: 'WIDENING',   col: 'var(--red)',   note: `HYG ${f(hygPct)}% — HY spreads widening, credit stress rising.` }
+    : { label: 'STABLE',     col: 'var(--amber)', note: `HYG ${pct(hygPct)} — HY spreads broadly stable, no stress signal.` };
+
+  // Yield data availability
+  const usYieldOk = us10y != null || us2y  != null;
+  const deYieldOk = de10y != null || de2y  != null;
+
+  // Missing data banner
+  const missing = [
+    !eurusd && 'EUR/USD', !dxy && 'DXY', !vix && 'VIX',
+    !spx && 'S&P 500', !audjpy && 'AUD/JPY', !hyg && 'HYG',
+    !usYieldOk && 'US Yields', !deYieldOk && 'DE Yields'
+  ].filter(Boolean);
+
+  // SPX narrative
+  const spxNote = spx?.pct > 1   ? '🟢 Strong rally — risk-on signal, EUR/USD may find support.'
+    : spx?.pct > 0               ? '🟡 Mild gains — slightly risk-on, watch for continuation.'
+    : spx?.pct < -1              ? '🔴 Sharp selloff — risk-off; USD likely to strengthen.'
+    : spx?.pct < 0               ? '🟠 Mild decline — slight risk-off tone, monitor DXY.'
+    : '⚪ S&P 500 broadly flat — equity market neutral.';
+
+  // Macro context note
+  const macroNote = spread10 != null
+    ? `US–DE 10Y spread is ${bp(spread10)}. ${spread10 > 200 ? 'Wide spread favours USD strength and weighs on EUR/USD.' : spread10 < 100 ? 'Narrow spread reduces USD advantage — supportive for EUR/USD.' : 'Moderate spread — USD has some yield advantage but not extreme.'}`
+    : 'Yield spread data loading — wider US–DE spread generally = USD strength = EUR/USD bearish pressure.';
+
+  const sdNote = stats
+    ? `Current price ${eurusd ? eurusd.price.toFixed(5) : '—'} is ${sdLabel(eurusd?.price, stats)}. 20-day mean: ${fp(stats.mean)}. 1 SD band: ${fp(stats.p1dn)} – ${fp(stats.p1up)}.`
+    : 'Insufficient price history to compute mean reversion levels.';
+
+  document.getElementById('mainContent').innerHTML = `
+
+${missing.length ? `<div class="data-note">⚠️ Still loading: <strong>${missing.join(', ')}</strong>. Markets may be closed or the data proxy is temporarily down. Try refreshing in a minute.</div>` : ''}
+
+<!-- REGIME + RISK ON/OFF -->
+<div class="regime-risk-row">
+  <div class="regime-card">
+    <div class="regime-card-title">🌐 Macro Regime</div>
+    <div class="regime-pill ${regime.cls}">${regime.regime}</div>
+    <div class="regime-note">${regime.note}</div>
+  </div>
+  <div class="regime-card">
+    <div class="regime-card-title">📡 Risk Environment</div>
+    <div class="risk-pill ${riskEnv.cls}">${riskEnv.env}</div>
+    <div class="regime-note">${riskEnv.note}</div>
+  </div>
+</div>
+
+<!-- KEY METRICS -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <div class="metric-label">EUR / USD</div>
+    <div class="metric-value">${eurusd ? eurusd.price.toFixed(5) : '—'}</div>
+    <div class="metric-change ${cc(eurusd?.pct)}">${pct(eurusd?.pct)}</div>
+    <div class="metric-tag">Frankfurter API</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">RSI (14)</div>
+    <div class="metric-value">${rsi ?? '—'}</div>
+    <div class="metric-change ${rsi > 70 ? 'neg' : rsi < 30 ? 'pos' : 'neu'}">${rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral'}</div>
+    <div class="metric-tag">${sdLabel(eurusd?.price, stats)}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">DXY</div>
+    <div class="metric-value">${dxy ? dxy.price.toFixed(2) : '—'}</div>
+    <div class="metric-change ${cc(dxy?.pct)}">${pct(dxy?.pct)}</div>
+    <div class="metric-tag">USD strength index</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">VIX</div>
+    <div class="metric-value">${vix ? vix.price.toFixed(1) : '—'}</div>
+    <div class="metric-change ${vix?.price > 25 ? 'neg' : vix?.price < 15 ? 'pos' : 'neu'}">${vix?.price > 25 ? 'Elevated risk' : vix?.price < 15 ? 'Risk-on' : 'Normal'}</div>
+    <div class="metric-tag">Fear index</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">S&amp;P 500</div>
+    <div class="metric-value">${spx ? spx.price.toFixed(0) : '—'}</div>
+    <div class="metric-change ${cc(spx?.pct)}">${pct(spx?.pct)}</div>
+    <div class="metric-tag">${spx?.pct > 0.5 ? 'Rally' : spx?.pct < -0.5 ? 'Selloff' : 'Flat'}</div>
+  </div>
+</div>
+
+<!-- YIELDS + SD LEVELS -->
+<div class="main-grid">
+  <div class="card">
+    <div class="card-title">
+      <span class="card-title-dot dot-blue"></span>Yield spreads
+      <span class="status-badge ${usYieldOk && deYieldOk ? 'status-lag' : usYieldOk || deYieldOk ? 'status-lag' : 'status-err'}">
+        ${usYieldOk || deYieldOk ? '1-DAY LAG' : 'ERROR — try refresh'}
+      </span>
+    </div>
+    <div class="spread-row"><span class="spread-name">US 10Y <span style="font-size:10px;color:var(--text3)">(FRED)</span></span><span class="spread-val">${f(us10y)}%</span></div>
+    <div class="spread-row"><span class="spread-name">US 2Y <span style="font-size:10px;color:var(--text3)">(FRED)</span></span><span class="spread-val">${f(us2y)}%</span></div>
+    <div class="spread-row"><span class="spread-name">DE 10Y <span style="font-size:10px;color:var(--text3)">(ECB)</span></span><span class="spread-val">${f(de10y)}%</span></div>
+    <div class="spread-row"><span class="spread-name">DE 2Y <span style="font-size:10px;color:var(--text3)">(ECB)</span></span><span class="spread-val">${f(de2y)}%</span></div>
+    <div class="spread-row section-start">
+      <span class="spread-name">US curve (10Y–2Y)</span>
+      <span class="spread-val ${usCurve != null ? (usCurve > 0 ? 'pos' : 'neg') : ''}">${bp(usCurve)}</span>
+    </div>
+    <div class="spread-row">
+      <span class="spread-name">US–DE 10Y spread</span>
+      <span class="spread-val highlight">${bp(spread10)}</span>
+    </div>
+    <div class="spread-row">
+      <span class="spread-name">US–DE 2Y spread</span>
+      <span class="spread-val highlight">${bp(spread2)}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="card-title-dot dot-green"></span>Mean reversion levels (20-day)</div>
+    <div class="sd-row" style="background:var(--red-dim);border:1px solid rgba(255,107,107,.2);">
+      <span class="sd-label">+2 SD — extreme</span><span class="sd-val" style="color:var(--red)">${fp(stats?.p2up)}</span>
+    </div>
+    <div class="sd-row" style="background:rgba(255,107,107,.06);">
+      <span class="sd-label">+1 SD — sell zone</span><span class="sd-val" style="color:var(--red)">${fp(stats?.p1up)}</span>
+    </div>
+    <div class="sd-row mean">
+      <span class="sd-label">20-day mean</span><span class="sd-val" style="color:var(--amber)">${fp(stats?.mean)}</span>
+    </div>
+    <div class="sd-row current">
+      <span class="sd-label" style="color:#c5bfff">▶ Current price</span>
+      <span class="sd-val" style="color:#c5bfff">${eurusd ? eurusd.price.toFixed(5) : '—'}</span>
+    </div>
+    <div class="sd-row" style="background:rgba(0,214,143,.06);">
+      <span class="sd-label">-1 SD — buy zone</span><span class="sd-val" style="color:var(--green)">${fp(stats?.p1dn)}</span>
+    </div>
+    <div class="sd-row" style="background:var(--green-dim);border:1px solid rgba(0,214,143,.2);">
+      <span class="sd-label">-2 SD — extreme</span><span class="sd-val" style="color:var(--green)">${fp(stats?.p2dn)}</span>
+    </div>
+  </div>
+</div>
+
+<!-- AUD/JPY CARRY + S&P 500 + HY SPREADS -->
+<div class="wide-grid">
+  <div class="card">
+    <div class="card-title"><span class="card-title-dot dot-amber"></span>AUD/JPY — Carry Proxy</div>
+    <div class="spread-row" style="border:none;padding:4px 0;">
+      <span class="spread-name">Price</span>
+      <span class="spread-val">${audjpy ? audjpy.price.toFixed(3) : '—'}</span>
+    </div>
+    <div class="spread-row" style="border:none;padding:4px 0 12px;">
+      <span class="spread-name">Day change</span>
+      <span class="spread-val ${cc(audjpy?.pct)}">${pct(audjpy?.pct)}</span>
+    </div>
+    <div class="carry-bar">
+      <div class="carry-fill" style="width:${carry.score}%;background:${carry.col}"></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:.06em;margin:8px 0 4px;color:${carry.col}">${carry.label}</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;">${carry.note}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="card-title-dot dot-blue"></span>S&amp;P 500</div>
+    <div class="spread-row" style="border:none;padding:4px 0;">
+      <span class="spread-name">Level</span>
+      <span class="spread-val">${spx ? spx.price.toFixed(0) : '—'}</span>
+    </div>
+    <div class="spread-row" style="border:none;padding:4px 0;">
+      <span class="spread-name">Day change</span>
+      <span class="spread-val ${cc(spx?.pct)}">${pct(spx?.pct)}</span>
+    </div>
+    <div class="spread-row" style="border:none;padding:4px 0 12px;">
+      <span class="spread-name">Point move</span>
+      <span class="spread-val ${cc(spx?.change)}">${spx ? (spx.change > 0 ? '+' : '') + spx.change.toFixed(0) : '—'}</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:4px;">${spxNote}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="card-title-dot dot-pink"></span>HY Credit Spreads</div>
+    <div class="spread-row" style="border:none;padding:4px 0;">
+      <span class="spread-name">HYG ETF price</span>
+      <span class="spread-val">${hyg ? hyg.price.toFixed(2) : '—'}</span>
+    </div>
+    <div class="spread-row" style="border:none;padding:4px 0 12px;">
+      <span class="spread-name">Day change</span>
+      <span class="spread-val ${cc(hyg?.pct)}">${pct(hyg?.pct)}</span>
+    </div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:.06em;margin:8px 0 4px;color:${hy.col}">SPREADS ${hy.label}</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;">${hy.note}</div>
+  </div>
+</div>
+
+<!-- ANALYSIS NOTES -->
+<div class="analysis-grid">
+  <div class="analysis-card">
+    <div class="analysis-card-title">📊 Macro read</div>
+    <div class="analysis-card-body">${macroNote}</div>
+  </div>
+  <div class="analysis-card">
+    <div class="analysis-card-title">↔ Mean reversion setup</div>
+    <div class="analysis-card-body">${sdNote}</div>
+  </div>
+</div>
+
+<div class="footer">
+  EUR/USD · Frankfurter API &nbsp;·&nbsp;
+  DXY, VIX, S&amp;P 500, AUD/JPY, HYG · Yahoo Finance (via corsproxy.io) &nbsp;·&nbsp;
+  US Yields · FRED (St. Louis Fed, 1-day lag) &nbsp;·&nbsp;
+  DE Yields · ECB Statistical Data Warehouse (1-day lag)<br>
+  For informational purposes only. Not financial advice.
+</div>`;
+}
+
+loadAll();
+</script>
+</body>
+</html>
