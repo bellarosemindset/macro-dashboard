@@ -3,148 +3,254 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EUR/USD Macro Dashboard</title>
+<title>FX Macro Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0d0f14; --bg2: #13161d; --bg3: #1a1d26;
-  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
-  --text: #e8eaf0; --text2: #8a8fa8; --text3: #555a72;
-  --green: #00d68f; --green-dim: rgba(0,214,143,0.12);
-  --red: #ff6b6b; --red-dim: rgba(255,107,107,0.12);
-  --amber: #ffb347; --amber-dim: rgba(255,179,71,0.12);
-  --blue: #5b9cf6; --blue-dim: rgba(91,156,246,0.12);
-  --accent: #7c6af7; --accent-dim: rgba(124,106,247,0.15);
-  --pink: #f06292; --pink-dim: rgba(240,98,146,0.12);
-  --radius: 12px; --radius-sm: 8px;
+  --bg:#0d0f14; --bg2:#13161d; --bg3:#1a1d26; --bg4:#20232e;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+  --text:#e8eaf0; --text2:#8a8fa8; --text3:#555a72;
+  --green:#00d68f; --gdim:rgba(0,214,143,0.12);
+  --red:#ff6b6b;   --rdim:rgba(255,107,107,0.12);
+  --amber:#ffb347; --adim:rgba(255,179,71,0.12);
+  --blue:#5b9cf6;  --bdim:rgba(91,156,246,0.12);
+  --accent:#7c6af7; --xdim:rgba(124,106,247,0.15);
+  --pink:#f06292;  --pdim:rgba(240,98,146,0.12);
+  --teal:#26c6da;  --tdim:rgba(38,198,218,0.12);
+  --r:12px; --rs:8px;
 }
-body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; min-height:100vh; }
+::-webkit-scrollbar{ width:3px; height:3px; }
+::-webkit-scrollbar-track{ background:var(--bg); }
+::-webkit-scrollbar-thumb{ background:var(--bg4); border-radius:2px; }
 
-/* ── HEADER ── */
-.header {
-  background: var(--bg2); border-bottom: 1px solid var(--border);
-  padding: 18px 28px; display: flex; align-items: center;
-  justify-content: space-between; flex-wrap: wrap; gap: 12px;
-  position: sticky; top: 0; z-index: 100;
-}
-.header-left { display: flex; align-items: center; gap: 16px; }
-.pair-title { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; }
-.pair-title span { color: var(--accent); }
-.live-badge {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--green-dim); border: 1px solid rgba(0,214,143,0.25);
-  border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: var(--green);
-}
-.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.timestamp { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); }
-.refresh-btn {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--accent-dim); border: 1px solid rgba(124,106,247,0.3);
-  color: var(--accent); border-radius: var(--radius-sm);
-  padding: 8px 18px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all 0.2s;
-}
-.refresh-btn:hover { background: rgba(124,106,247,0.25); }
-.refresh-btn.spinning svg { animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.header{ background:var(--bg2); border-bottom:1px solid var(--border); padding:13px 24px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  position:sticky; top:0; z-index:200; }
+.header-left{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.dash-title{ font-size:17px; font-weight:700; letter-spacing:.04em; }
+.dash-title span{ color:var(--accent); }
+.live-badge{ display:flex; align-items:center; gap:6px; background:var(--gdim);
+  border:1px solid rgba(0,214,143,0.25); border-radius:20px; padding:3px 11px;
+  font-size:10px; font-weight:600; color:var(--green); }
+.live-dot{ width:5px; height:5px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse{ 0%,100%{opacity:1}50%{opacity:0.3} }
+.session-badges{ display:flex; gap:5px; }
+.sp{ font-size:9px; font-weight:700; letter-spacing:.08em; padding:2px 8px; border-radius:20px;
+  border:1px solid var(--border); color:var(--text3); transition:all .3s; font-family:'DM Mono',monospace; }
+.sp.on{ border-color:var(--teal); color:var(--teal); background:var(--tdim); }
+.header-right{ display:flex; align-items:center; gap:10px; }
+.clock{ font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); }
+.refresh-btn{ display:flex; align-items:center; gap:7px; background:var(--xdim);
+  border:1px solid rgba(124,106,247,0.3); color:var(--accent); border-radius:var(--rs);
+  padding:7px 16px; font-family:'Syne',sans-serif; font-size:12px; font-weight:600;
+  cursor:pointer; transition:all 0.2s; }
+.refresh-btn:hover{ background:rgba(124,106,247,0.25); }
+.refresh-btn.spinning svg{ animation:spin 0.8s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
 
-/* ── LAYOUT ── */
-.page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; }
-.metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; margin-bottom: 20px; }
-.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.wide-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.regime-risk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-@media(max-width:900px){ .wide-grid { grid-template-columns: 1fr 1fr; } }
-@media(max-width:680px){ .main-grid, .regime-risk-row, .analysis-grid, .wide-grid { grid-template-columns: 1fr; } }
+/* DATA FRESHNESS BANNER */
+.freshness-bar{ background:var(--bg3); border-bottom:1px solid var(--border);
+  padding:5px 24px; display:flex; gap:16px; overflow-x:auto; align-items:center; }
+.fresh-item{ display:flex; align-items:center; gap:5px; flex-shrink:0; }
+.fresh-dot{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.fresh-label{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text3); }
+.fresh-val{ font-family:'DM Mono',monospace; font-size:9px; font-weight:700; }
 
-/* ── CARDS ── */
-.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
-.card-title {
-  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3);
-  display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
-}
-.card-title-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.dot-blue { background: var(--blue); } .dot-green { background: var(--green); }
-.dot-amber { background: var(--amber); } .dot-pink { background: var(--pink); }
-.status-badge { margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: .06em; padding: 2px 8px; border-radius: 20px; }
-.status-live { background: var(--green-dim); color: var(--green); }
-.status-err  { background: var(--red-dim);   color: var(--red);   }
-.status-lag  { background: var(--amber-dim); color: var(--amber); }
+.nav{ background:var(--bg2); border-bottom:1px solid var(--border); padding:0 24px;
+  display:flex; gap:0; overflow-x:auto; }
+.nav::-webkit-scrollbar{ height:0; }
+.nav-btn{ font-family:'Syne',sans-serif; font-size:11px; font-weight:600; letter-spacing:.04em;
+  padding:10px 15px; cursor:pointer; color:var(--text3); background:none;
+  border:none; border-bottom:2px solid transparent; transition:all .15s; white-space:nowrap; }
+.nav-btn:hover{ color:var(--text2); }
+.nav-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
 
-/* ── METRIC CARDS ── */
-.metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
-.metric-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; }
-.metric-value { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; line-height: 1; margin-bottom: 4px; }
-.metric-change { font-family: 'DM Mono', monospace; font-size: 12px; }
-.metric-change.pos { color: var(--green); } .metric-change.neg { color: var(--red); } .metric-change.neu { color: var(--text3); }
-.metric-tag { font-size: 10px; color: var(--text3); margin-top: 4px; }
+.ticker{ background:var(--bg2); border-bottom:1px solid var(--border); padding:6px 24px;
+  display:flex; gap:0; overflow-x:auto; }
+.ticker::-webkit-scrollbar{ height:0; }
+.tick{ display:flex; align-items:center; gap:6px; padding:0 14px;
+  border-right:1px solid var(--border); flex-shrink:0; }
+.tick:first-child{ padding-left:0; }
+.ts{ font-family:'DM Mono',monospace; font-size:8px; letter-spacing:.08em; color:var(--text3); }
+.tv{ font-family:'DM Mono',monospace; font-size:12px; }
+.tc{ font-family:'DM Mono',monospace; font-size:9px; }
+.pos{ color:var(--green); } .neg{ color:var(--red); } .neu{ color:var(--text3); }
 
-/* ── SPREAD ROWS ── */
-.spread-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); }
-.spread-row:last-child { border-bottom: none; }
-.spread-row.section-start { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--border2); }
-.spread-name { font-size: 12px; color: var(--text2); }
-.spread-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
-.spread-val.pos { color: var(--green); } .spread-val.neg { color: var(--red); } .spread-val.highlight { color: var(--amber); }
+.page-wrap{ max-width:1280px; margin:0 auto; padding:18px 22px 60px; }
+.tab-page{ display:none; }
+.tab-page.active{ display:block; }
 
-/* ── SD LEVELS ── */
-.sd-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 6px; margin-bottom: 3px; }
-.sd-row.current { background: var(--accent-dim); border: 1px solid rgba(124,106,247,.2); }
-.sd-row.mean { background: rgba(255,255,255,.03); }
-.sd-label { font-size: 12px; color: var(--text2); }
-.sd-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+.g2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.g3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.g4{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.gauto{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+.s2{ grid-column:span 2; }
+.mb{ margin-bottom:12px; }
 
-/* ── REGIME / RISK ── */
-.regime-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
-.regime-card-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
-.regime-pill, .risk-pill {
-  display: inline-block; font-size: 15px; font-weight: 700; letter-spacing: .08em;
-  padding: 8px 22px; border-radius: 20px; margin-bottom: 8px;
-}
-.regime-goldilocks { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(0,214,143,.3); }
-.regime-reflation  { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(255,179,71,.3); }
-.regime-stagflation{ background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(255,107,107,.3); }
-.regime-deflation  { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(91,156,246,.3); }
-.regime-mixed      { background: rgba(138,143,168,.12); color: var(--text2); border: 1px solid rgba(138,143,168,.25); }
-.risk-on      { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,214,143,.3); }
-.risk-off     { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(255,107,107,.3); }
-.risk-neutral { background: rgba(138,143,168,.12); color: var(--text2); border: 1px solid rgba(138,143,168,.25); }
-.regime-note { font-size: 12px; color: var(--text2); line-height: 1.6; margin-top: 4px; }
+.card{ background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; }
+.ct{ font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text3);
+  display:flex; align-items:center; gap:7px; margin-bottom:13px; padding-bottom:9px; border-bottom:1px solid var(--border); }
+.ctd{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.badge{ margin-left:auto; font-size:9px; font-weight:700; letter-spacing:.06em; padding:2px 8px; border-radius:20px; }
+.b-live{ background:var(--gdim); color:var(--green); }
+.b-lag1{ background:var(--adim); color:var(--amber); }  /* 1-day lag */
+.b-daily{ background:var(--bdim); color:var(--blue); }  /* daily */
+.b-info{ background:var(--bdim); color:var(--blue); }
 
-/* ── CARRY BAR ── */
-.carry-bar { height: 6px; border-radius: 3px; background: var(--bg3); margin: 10px 0; overflow: hidden; }
-.carry-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.metric-card{ background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; }
+.ml{ font-size:9px; font-weight:700; letter-spacing:.1em; color:var(--text3); text-transform:uppercase; margin-bottom:6px; }
+.mv{ font-family:'DM Mono',monospace; font-size:21px; font-weight:500; line-height:1; margin-bottom:3px; }
+.mch{ font-family:'DM Mono',monospace; font-size:11px; }
+.mt{ font-size:9px; color:var(--text3); margin-top:3px; }
 
-/* ── ANALYSIS CARDS ── */
-.analysis-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
-.analysis-card-title { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
-.analysis-card-body { font-size: 13px; color: var(--text2); line-height: 1.7; }
-.analysis-card-body strong { color: var(--text); font-weight: 600; }
+.spread-row{ display:flex; justify-content:space-between; align-items:center;
+  padding:6px 0; border-bottom:1px solid var(--border); }
+.spread-row:last-child{ border-bottom:none; }
+.spread-row.ss{ margin-top:5px; padding-top:9px; border-top:1px solid var(--border2); }
+.sn{ font-size:11px; color:var(--text2); display:flex; align-items:center; gap:5px; }
+.sv{ font-family:'DM Mono',monospace; font-size:12px; font-weight:500; }
+.sv.pos{ color:var(--green); } .sv.neg{ color:var(--red); } .sv.hl{ color:var(--amber); }
+.freshness-tag{ font-size:8px; font-family:'DM Mono',monospace; padding:1px 5px; border-radius:2px; }
+.ft-daily{ background:var(--gdim); color:var(--green); }
+.ft-1d{ background:var(--adim); color:var(--amber); }
+.ft-mo{ background:var(--rdim); color:var(--red); }
 
-/* ── MISC ── */
-.data-note { background: var(--amber-dim); border: 1px solid rgba(255,179,71,.2); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--amber); margin-bottom: 16px; line-height: 1.6; }
-.footer { text-align: center; font-size: 11px; color: var(--text3); line-height: 1.8; padding-top: 16px; border-top: 1px solid var(--border); }
-.loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 20px; color: var(--text2); font-size: 13px; }
-.spinner { width: 28px; height: 28px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
-.loading-step { color: var(--text3); font-size: 12px; font-family: 'DM Mono', monospace; }
+.sd-row{ display:flex; justify-content:space-between; align-items:center;
+  padding:6px 10px; border-radius:6px; margin-bottom:3px; }
+.sd-cur{ background:var(--xdim); border:1px solid rgba(124,106,247,.2); }
+.sd-mean{ background:rgba(255,255,255,.03); }
+.sdl{ font-size:12px; color:var(--text2); }
+.sdv{ font-family:'DM Mono',monospace; font-size:12px; font-weight:500; }
+
+.zrow{ display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.zl{ font-size:10px; color:var(--text2); width:155px; flex-shrink:0; }
+.zt{ flex:1; height:5px; background:var(--bg4); border-radius:3px; position:relative; overflow:visible; }
+.zm{ position:absolute; left:50%; top:-2px; width:1px; height:9px; background:var(--border2); }
+.zf{ height:100%; border-radius:3px; position:absolute; }
+.zv{ font-family:'DM Mono',monospace; font-size:10px; font-weight:700; width:38px; text-align:right; flex-shrink:0; }
+.zsig{ font-family:'DM Mono',monospace; font-size:8px; width:68px; text-align:right; flex-shrink:0; color:var(--text3); }
+
+.regime-pill, .risk-pill{ display:inline-block; font-size:14px; font-weight:700; letter-spacing:.07em; padding:7px 20px; border-radius:20px; margin-bottom:7px; }
+.rg{ background:var(--gdim); color:var(--green); border:1px solid rgba(0,214,143,.3); }
+.rfl{ background:var(--adim); color:var(--amber); border:1px solid rgba(255,179,71,.3); }
+.rst{ background:var(--rdim); color:var(--red); border:1px solid rgba(255,107,107,.3); }
+.rdf{ background:var(--bdim); color:var(--blue); border:1px solid rgba(91,156,246,.3); }
+.rmx{ background:rgba(138,143,168,.12); color:var(--text2); border:1px solid rgba(138,143,168,.25); }
+.ron{ background:var(--gdim); color:var(--green); border:1px solid rgba(0,214,143,.3); }
+.rof{ background:var(--rdim); color:var(--red); border:1px solid rgba(255,107,107,.3); }
+.rne{ background:rgba(138,143,168,.12); color:var(--text2); border:1px solid rgba(138,143,168,.25); }
+.regime-note{ font-size:12px; color:var(--text2); line-height:1.65; margin-top:4px; }
+
+.curve-pill{ display:inline-flex; align-items:center; font-family:'DM Mono',monospace;
+  font-size:10px; font-weight:700; letter-spacing:.07em; padding:3px 11px; border-radius:4px; }
+.ci{ background:var(--rdim); color:var(--red); border:1px solid rgba(255,107,107,.3); }
+.cf{ background:var(--adim); color:var(--amber); border:1px solid rgba(255,179,71,.3); }
+.cn{ background:var(--gdim); color:var(--green); border:1px solid rgba(0,214,143,.3); }
+.cs{ background:var(--bdim); color:var(--blue); border:1px solid rgba(91,156,246,.3); }
+
+.cb-card{ background:var(--bg3); border:1px solid var(--border); border-radius:var(--rs); padding:13px 15px; }
+.cb-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:9px; }
+.cb-name{ font-size:11px; font-weight:700; color:var(--text); }
+.cb-rate{ font-family:'DM Mono',monospace; font-size:16px; font-weight:500; color:var(--accent); }
+.stance{ font-family:'DM Mono',monospace; font-size:8px; font-weight:700; letter-spacing:.08em;
+  padding:2px 8px; border-radius:3px; border:1px solid; margin-top:4px; display:inline-block; }
+.s-hawk{ background:var(--rdim); color:var(--red); border-color:rgba(255,107,107,.3); }
+.s-dove{ background:var(--tdim); color:var(--teal); border-color:rgba(38,198,218,.3); }
+.s-hold{ background:rgba(138,143,168,.1); color:var(--text2); border-color:var(--border2); }
+.s-neut{ background:var(--adim); color:var(--amber); border-color:rgba(255,179,71,.3); }
+.cb-meter{ height:3px; background:var(--bg); border-radius:2px; margin:7px 0; }
+.cb-fill{ height:100%; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--amber),var(--red)); }
+.cb-txt{ font-size:11px; color:var(--text2); line-height:1.6; padding-top:7px; border-top:1px solid var(--border); }
+.cb-meta{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text3); margin-top:6px; }
+
+.pair-row{ display:flex; align-items:center; gap:9px; padding:7px 10px;
+  background:var(--bg3); border-radius:var(--rs); border:1px solid var(--border);
+  margin-bottom:6px; cursor:pointer; transition:border-color .2s; }
+.pair-row:hover{ border-color:var(--border2); }
+.pr-sym{ font-family:'DM Mono',monospace; font-size:11px; font-weight:700; width:64px; }
+.pr-price{ font-family:'DM Mono',monospace; font-size:12px; width:70px; }
+.pr-chg{ font-family:'DM Mono',monospace; font-size:10px; width:50px; }
+.pr-bias{ font-family:'DM Mono',monospace; font-size:8px; font-weight:700; letter-spacing:.07em; padding:2px 8px; border-radius:3px; border:1px solid; }
+.b-bull{ background:var(--gdim); color:var(--green); border-color:rgba(0,214,143,.3); }
+.b-bear{ background:var(--rdim); color:var(--red); border-color:rgba(255,107,107,.3); }
+.b-neut{ background:rgba(138,143,168,.1); color:var(--text2); border-color:var(--border); }
+.pr-z{ font-family:'DM Mono',monospace; font-size:10px; width:38px; text-align:right; }
+.pr-note{ font-size:9px; color:var(--text3); flex:1; text-align:right; }
+
+.rmat{ width:100%; border-collapse:collapse; font-family:'DM Mono',monospace; font-size:9px; }
+.rmat td,.rmat th{ padding:5px 8px; border:1px solid var(--border); text-align:center; }
+.rmat th{ color:var(--text3); background:var(--bg3); font-weight:700; }
+.rmat td.rpos{ color:var(--green); } .rmat td.rneg{ color:var(--red); } .rmat td.rzero{ color:var(--text3); background:var(--bg3); }
+
+.carry-bar{ height:6px; border-radius:3px; background:var(--bg3); margin:8px 0; overflow:hidden; }
+.carry-fill{ height:100%; border-radius:3px; transition:width .6s ease; }
+
+.ev-day-hdr{ font-family:'DM Mono',monospace; font-size:9px; font-weight:700; letter-spacing:.12em;
+  color:var(--text3); text-transform:uppercase; padding:5px 0; border-bottom:1px solid var(--border); margin-bottom:6px; }
+.ev-row{ display:flex; align-items:flex-start; gap:7px; padding:6px 0; border-bottom:1px solid var(--border); }
+.ev-row:last-child{ border-bottom:none; }
+.ev-time{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text3); width:42px; flex-shrink:0; }
+.ev-flag{ font-size:11px; flex-shrink:0; }
+.ev-name{ flex:1; font-size:11px; color:var(--text); }
+.ev-impact{ font-family:'DM Mono',monospace; font-size:8px; font-weight:700; padding:2px 5px; border-radius:2px; flex-shrink:0; }
+.i-high{ background:var(--rdim); color:var(--red); }
+.i-med{ background:var(--adim); color:var(--amber); }
+.i-low{ background:rgba(138,143,168,.1); color:var(--text3); }
+.ev-fv{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text3); text-align:right; flex-shrink:0; line-height:1.7; min-width:68px; }
+
+.chk-item{ display:flex; align-items:flex-start; gap:9px; padding:8px 11px;
+  background:var(--bg3); border-radius:var(--rs); border:1px solid var(--border);
+  cursor:pointer; transition:all .2s; margin-bottom:5px; }
+.chk-item:hover{ border-color:var(--border2); }
+.chk-item.done{ background:rgba(0,214,143,.05); border-color:rgba(0,214,143,.2); }
+.chk-icon{ font-size:12px; flex-shrink:0; margin-top:1px; }
+.chk-txt{ flex:1; font-size:11px; color:var(--text2); line-height:1.5; }
+.chk-box{ font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); flex-shrink:0; }
+.chk-item.done .chk-box{ color:var(--green); }
+
+.sig-row{ display:flex; align-items:center; gap:7px; padding:5px 0; border-bottom:1px solid var(--border); }
+.sig-row:last-child{ border-bottom:none; }
+.sig-dot{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.sig-name{ flex:1; font-size:11px; color:var(--text2); }
+.sig-val{ font-family:'DM Mono',monospace; font-size:10px; }
+.sig-sub{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text3); }
+
+.data-note{ background:var(--adim); border:1px solid rgba(255,179,71,.2); border-radius:var(--rs);
+  padding:10px 14px; font-size:12px; color:var(--amber); margin-bottom:14px; line-height:1.6; }
+.analysis-card{ background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:15px 17px; }
+.act{ font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
+.acb{ font-size:12px; color:var(--text2); line-height:1.7; }
+.acb strong{ color:var(--text); }
+.footer{ text-align:center; font-size:11px; color:var(--text3); line-height:1.8; padding-top:14px; border-top:1px solid var(--border); margin-top:30px; }
+.loading-screen{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:60px 20px; color:var(--text2); font-size:13px; }
+.spinner{ width:26px; height:26px; border:2px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+.ls{ color:var(--text3); font-size:11px; font-family:'DM Mono',monospace; }
+
+@media(max-width:960px){ .g3,.g4{ grid-template-columns:1fr 1fr; } }
+@media(max-width:640px){ .g2,.g3,.g4{ grid-template-columns:1fr; } .s2{ grid-column:span 1; } .page-wrap{ padding:12px 12px 40px; } }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-left">
-    <div class="pair-title">EUR<span>/</span>USD</div>
+    <div class="dash-title">FX<span>/</span>MACRO</div>
     <div class="live-badge"><span class="live-dot"></span>LIVE DATA</div>
+    <div class="session-badges">
+      <span class="sp" id="sp-tokyo">TOKYO</span>
+      <span class="sp" id="sp-london">LONDON</span>
+      <span class="sp" id="sp-ny">NEW YORK</span>
+    </div>
   </div>
   <div class="header-right">
-    <span class="timestamp" id="ts">—</span>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <span class="clock" id="clock">—</span>
+    <span id="ts" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">—</span>
+    <button class="refresh-btn" id="refreshBtn" onclick="forceRefresh()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
         <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
         <path d="M8 16H3v5"/>
@@ -154,425 +260,1029 @@ body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-seri
   </div>
 </div>
 
-<div class="page">
-  <div id="mainContent">
-    <div class="loading-screen">
-      <div class="spinner"></div>
-      <div>Loading market data…</div>
-      <div class="loading-step">EUR/USD · DXY · VIX · S&amp;P 500 · AUD/JPY · HYG · Yields</div>
-    </div>
-  </div>
+<!-- DATA FRESHNESS INDICATOR BAR -->
+<div class="freshness-bar">
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">FX PRICES</span><span class="fresh-val" style="color:var(--green)" id="fr-fx">DAILY</span></div>
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">US YIELDS (FRED)</span><span class="fresh-val" style="color:var(--amber)" id="fr-us">1-DAY LAG</span></div>
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">EUR/DE (ECB)</span><span class="fresh-val" style="color:var(--green)" id="fr-ecb">DAILY</span></div>
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">UK (BOE)</span><span class="fresh-val" style="color:var(--green)" id="fr-boe">DAILY</span></div>
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">JAPAN (MOF)</span><span class="fresh-val" style="color:var(--green)" id="fr-mof">DAILY</span></div>
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">CANADA (BOC)</span><span class="fresh-val" style="color:var(--green)" id="fr-boc">DAILY</span></div>
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--amber)"></div><span class="fresh-label">AUSTRALIA (RBA)</span><span class="fresh-val" style="color:var(--amber)" id="fr-rba">LOADING</span></div>
+  <div class="fresh-item" style="margin-left:auto;"><div class="fresh-dot" style="background:var(--accent)"></div><span class="fresh-label">LAST UPDATE</span><span class="fresh-val" style="color:var(--accent)" id="fr-updated">—</span></div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showTab('overview',this)">Overview</button>
+  <button class="nav-btn" onclick="showTab('eurusd',this)">EUR/USD</button>
+  <button class="nav-btn" onclick="showTab('gbpusd',this)">GBP/USD</button>
+  <button class="nav-btn" onclick="showTab('audusd',this)">AUD/USD</button>
+  <button class="nav-btn" onclick="showTab('usdjpy',this)">USD/JPY</button>
+  <button class="nav-btn" onclick="showTab('usdcad',this)">USD/CAD</button>
+  <button class="nav-btn" onclick="showTab('audjpy',this)">AUD/JPY</button>
+  <button class="nav-btn" onclick="showTab('cbpolicy',this)">CB Policy</button>
+  <button class="nav-btn" onclick="showTab('lookahead',this)">Look Ahead</button>
+  <button class="nav-btn" onclick="showTab('zscores',this)">Z-Scores</button>
+</div>
+
+<div class="ticker">
+  <div class="tick"><span class="ts">EUR/USD</span><span class="tv" id="t-eurusd">—</span><span class="tc" id="tc-eurusd">—</span></div>
+  <div class="tick"><span class="ts">GBP/USD</span><span class="tv" id="t-gbpusd">—</span><span class="tc" id="tc-gbpusd">—</span></div>
+  <div class="tick"><span class="ts">AUD/USD</span><span class="tv" id="t-audusd">—</span><span class="tc" id="tc-audusd">—</span></div>
+  <div class="tick"><span class="ts">USD/JPY</span><span class="tv" id="t-usdjpy">—</span><span class="tc" id="tc-usdjpy">—</span></div>
+  <div class="tick"><span class="ts">USD/CAD</span><span class="tv" id="t-usdcad">—</span><span class="tc" id="tc-usdcad">—</span></div>
+  <div class="tick"><span class="ts">AUD/JPY</span><span class="tv" id="t-audjpy">—</span><span class="tc" id="tc-audjpy">—</span></div>
+  <div class="tick"><span class="ts">DXY</span><span class="tv" id="t-dxy">—</span><span class="tc" id="tc-dxy">—</span></div>
+  <div class="tick"><span class="ts">VIX</span><span class="tv" id="t-vix">—</span><span class="tc" id="tc-vix">—</span></div>
+  <div class="tick"><span class="ts">S&P 500</span><span class="tv" id="t-spx">—</span><span class="tc" id="tc-spx">—</span></div>
+  <div class="tick"><span class="ts">GOLD</span><span class="tv" id="t-gold">—</span><span class="tc" id="tc-gold">—</span></div>
+</div>
+
+<div class="page-wrap">
+  <div class="tab-page active" id="tab-overview"><div class="loading-screen"><div class="spinner"></div><div>Fetching live data from all sources…</div><div class="ls">Frankfurter · Yahoo · FRED · ECB · BoE · MoF Japan · BoC · RBA</div></div></div>
+  <div class="tab-page" id="tab-eurusd"></div>
+  <div class="tab-page" id="tab-gbpusd"></div>
+  <div class="tab-page" id="tab-audusd"></div>
+  <div class="tab-page" id="tab-usdjpy"></div>
+  <div class="tab-page" id="tab-usdcad"></div>
+  <div class="tab-page" id="tab-audjpy"></div>
+  <div class="tab-page" id="tab-cbpolicy"></div>
+  <div class="tab-page" id="tab-lookahead"></div>
+  <div class="tab-page" id="tab-zscores"></div>
 </div>
 
 <script>
-// ─── CORS PROXY ──────────────────────────────────────────────────────────────
-const PROXY = 'https://corsproxy.io/?url=';
+'use strict';
 
-async function pfetch(url, ms = 12000) {
-  const go = (u) => {
-    const ac = new AbortController();
-    setTimeout(() => ac.abort(), ms);
-    return fetch(u, { signal: ac.signal });
-  };
-  try { const r = await go(url); if (r.ok) return r; } catch(e) {}
-  return go(PROXY + encodeURIComponent(url));
-}
+// ═══════════════════════════════════════════════════════════════
+//  Z-SCORE ENGINE  —  exact port of your Python functions
+// ═══════════════════════════════════════════════════════════════
+const ZS={
+  mean(a){ return a.reduce((s,v)=>s+v,0)/a.length; },
+  std(a,ddof=0){ const m=ZS.mean(a); return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/(a.length-ddof)); },
 
-// ─── EUR/USD (Frankfurter — no CORS issues) ──────────────────────────────────
-async function fetchEURUSD() {
-  try {
-    const today = new Date();
-    const from = new Date(today); from.setMonth(from.getMonth() - 3);
-    const fmt = d => d.toISOString().split('T')[0];
-    const [lr, hr] = await Promise.all([
-      pfetch('https://api.frankfurter.app/latest?from=EUR&to=USD'),
-      pfetch(`https://api.frankfurter.app/${fmt(from)}..${fmt(today)}?from=EUR&to=USD`)
-    ]);
-    const latest = await lr.json();
-    const hist   = await hr.json();
-    const price  = latest.rates.USD;
-    const dates  = Object.keys(hist.rates).sort();
-    const closes = dates.map(d => hist.rates[d].USD);
-    const prev   = closes.length >= 2 ? closes[closes.length - 2] : price;
-    return { price, prev, change: price - prev, pct: ((price - prev) / prev) * 100, closes };
-  } catch(e) { console.error('EUR/USD:', e); return null; }
-}
+  // rolling_zscore(series, window)
+  rollingZscore(series,window){
+    return series.map((_,i)=>{
+      if(i<window-1) return null;
+      const w=series.slice(i-window+1,i+1);
+      const m=ZS.mean(w), s=ZS.std(w,0);
+      return s===0?0:(series[i]-m)/s;
+    });
+  },
 
-// ─── YAHOO FINANCE (DXY, VIX, SPX, AUD/JPY, HYG) ────────────────────────────
-async function fetchYahoo(ticker) {
-  try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=10d`;
-    const r = await pfetch(url);
-    const d = await r.json();
-    const q = d.chart.result[0];
-    const closes = q.indicators.quote[0].close.filter(v => v != null);
-    const i = closes.length - 1;
-    const curr = closes[i], prev = closes[i - 1] ?? curr;
-    return { price: curr, prev, change: curr - prev, pct: ((curr - prev) / prev) * 100, closes };
-  } catch(e) { console.error(`Yahoo ${ticker}:`, e); return null; }
-}
+  // spread_zscore(series_a, series_b, beta=1.0, window=60)
+  spreadZscore(a,b,beta=1.0,window=60){
+    const spread=a.map((v,i)=>v-beta*b[i]);
+    return spread.map((_,i)=>{
+      if(i<window-1) return null;
+      const w=spread.slice(i-window+1,i+1);
+      const m=ZS.mean(w), s=ZS.std(w,0);
+      return s===0?0:(spread[i]-m)/s;
+    });
+  },
 
-// ─── US YIELDS via FRED ──────────────────────────────────────────────────────
-// Bug fix: API key must be a string literal in the URL, not a variable reference
-async function fetchFRED(seriesId) {
-  const key = 'b2b3bbae5e2c732c442f2e1f6b7766b9';
-  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${key}&file_type=json&limit=5&sort_order=desc`;
-  try {
-    const r = await pfetch(url);
-    const d = await r.json();
-    const obs = d.observations?.filter(o => o.value !== '.');
-    return obs?.length ? parseFloat(obs[0].value) : null;
-  } catch(e) { console.error(`FRED ${seriesId}:`, e); return null; }
-}
+  // ewma_zscore(series, span)
+  ewmaZscore(series,span){
+    const alpha=2/(span+1);
+    let em=series[0], ev=0;
+    return series.map((x,i)=>{
+      if(i===0){ em=x; ev=0; return 0; }
+      const pm=em;
+      em=alpha*x+(1-alpha)*em;
+      ev=(1-alpha)*(ev+alpha*(x-pm)**2);
+      const s=Math.sqrt(ev);
+      return s===0?0:(x-em)/s;
+    });
+  },
 
-// ─── GERMAN YIELDS via ECB Statistical Data Warehouse ────────────────────────
-// ECB SDW REST API: free, no key needed, CORS-friendly via proxy
-// Series keys: YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y  (10Y Bund par yield)
-//              YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y   (2Y Bund par yield)
-async function fetchECB(seriesKey) {
-  const url = `https://data-api.ecb.europa.eu/service/data/${seriesKey}?lastNObservations=5&format=jsondata`;
-  try {
-    const r = await pfetch(url);
-    const d = await r.json();
-    // Navigate ECB JSON structure
-    const series = d.dataSets?.[0]?.series;
-    if (!series) return null;
-    const key = Object.keys(series)[0];
-    const observations = series[key]?.observations;
-    if (!observations) return null;
-    // Get the latest non-null observation (sorted by index = time)
-    const indices = Object.keys(observations).map(Number).sort((a, b) => b - a);
-    for (const idx of indices) {
-      const val = observations[idx]?.[0];
-      if (val != null && val !== 'NaN') return parseFloat(val);
-    }
+  latest(series,window=60){
+    if(!series||series.length<5) return null;
+    const w=Math.min(window,series.length);
+    const z=ZS.rollingZscore(series,w);
+    for(let i=z.length-1;i>=0;i--) if(z[i]!==null) return +z[i].toFixed(2);
     return null;
-  } catch(e) { console.error(`ECB ${seriesKey}:`, e); return null; }
-}
-
-// ─── CALCS ───────────────────────────────────────────────────────────────────
-function calcRSI(prices, period = 14) {
-  if (!prices || prices.length < period + 1) return null;
-  let gains = 0, losses = 0;
-  for (let i = prices.length - period; i < prices.length; i++) {
-    const d = prices[i] - prices[i - 1];
-    if (d > 0) gains += d; else losses += Math.abs(d);
+  },
+  latestEwma(series,span=30){
+    if(!series||series.length<5) return null;
+    const z=ZS.ewmaZscore(series,span);
+    return +(z[z.length-1]||0).toFixed(2);
+  },
+  latestSpread(a,b,beta=1.0,window=60){
+    if(!a||!b||a.length<10||b.length<10) return null;
+    const mn=Math.min(a.length,b.length);
+    const z=ZS.spreadZscore(a.slice(-mn),b.slice(-mn),beta,Math.min(window,mn));
+    for(let i=z.length-1;i>=0;i--) if(z[i]!==null) return +z[i].toFixed(2);
+    return null;
+  },
+  sdBands(series,w=20){
+    const s=series.slice(-w);
+    const mean=ZS.mean(s), sd=ZS.std(s,0);
+    return{ mean:+mean.toFixed(5), sd:+sd.toFixed(5),
+      p2u:+(mean+2*sd).toFixed(5), p1u:+(mean+sd).toFixed(5),
+      p1d:+(mean-sd).toFixed(5),   p2d:+(mean-2*sd).toFixed(5),
+      current:+s[s.length-1].toFixed(5) };
   }
-  const rs = (gains / period) / ((losses / period) || 0.0001);
-  return parseFloat((100 - 100 / (1 + rs)).toFixed(1));
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  CORS PROXY + CACHE  (6-hour localStorage, cleared on refresh)
+// ═══════════════════════════════════════════════════════════════
+const PROXY='https://corsproxy.io/?url=';
+async function pfetch(url,ms=14000){
+  const go=u=>{ const ac=new AbortController(); setTimeout(()=>ac.abort(),ms); return fetch(u,{signal:ac.signal}); };
+  try{ const r=await go(url); if(r.ok) return r; }catch(e){}
+  return go(PROXY+encodeURIComponent(url));
+}
+const CACHE={
+  set(k,v){ try{ localStorage.setItem('fxd2_'+k,JSON.stringify({t:Date.now(),v})); }catch(e){} },
+  get(k,maxMs=22*3600*1000){ try{ const r=JSON.parse(localStorage.getItem('fxd2_'+k)); return r&&(Date.now()-r.t)<maxMs?r.v:null; }catch(e){ return null; } },
+  clear(){ Object.keys(localStorage).filter(k=>k.startsWith('fxd2_')).forEach(k=>localStorage.removeItem(k)); }
+};
+// Track data source freshness
+const FRESHNESS={};
+
+function normResult(closes){
+  if(!closes||!closes.length) return null;
+  const price=closes[closes.length-1];
+  const prev=closes.length>=2?closes[closes.length-2]:price;
+  return{ price, prev, pct:((price-prev)/prev)*100, closes };
 }
 
-function calcStats(prices, w = 20) {
-  if (!prices || prices.length < w) return null;
-  const s = prices.slice(-w);
-  const mean = s.reduce((a, b) => a + b, 0) / s.length;
-  const sd   = Math.sqrt(s.reduce((a, b) => a + (b - mean) ** 2, 0) / s.length);
-  return {
-    mean: +mean.toFixed(5), sd: +sd.toFixed(5),
-    p1up: +(mean + sd).toFixed(5),   p2up: +(mean + sd * 2).toFixed(5),
-    p1dn: +(mean - sd).toFixed(5),   p2dn: +(mean - sd * 2).toFixed(5),
-  };
+// ═══════════════════════════════════════════════════════════════
+//  FX PRICES — Frankfurter (free, no CORS, daily closes)
+// ═══════════════════════════════════════════════════════════════
+async function fetchFX(base,quote,days=90){
+  const ck=`fx_${base}${quote}`;
+  const c=CACHE.get(ck); if(c) return c;
+  try{
+    const today=new Date(), from=new Date(today); from.setDate(from.getDate()-days);
+    const fmt=d=>d.toISOString().split('T')[0];
+    const [lr,hr]=await Promise.all([
+      pfetch(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`),
+      pfetch(`https://api.frankfurter.app/${fmt(from)}..${fmt(today)}?from=${base}&to=${quote}`)
+    ]);
+    const latest=await lr.json(), hist=await hr.json();
+    const price=latest.rates[quote];
+    const dates=Object.keys(hist.rates).sort();
+    const closes=dates.map(d=>hist.rates[d][quote]);
+    const result=normResult([...closes.slice(0,-1),price]);
+    CACHE.set(ck,result);
+    FRESHNESS.fx='DAILY — Frankfurter';
+    return result;
+  }catch(e){ console.warn(`FX ${base}/${quote}`,e); return null; }
 }
 
-// ─── REGIME DETECTION ────────────────────────────────────────────────────────
-function detectRegime(vix, spxPct, usCurve, dxyPct) {
-  const riskOff   = vix?.price > 25;
-  const spxUp     = spxPct != null && spxPct > 0;
-  const curvePos  = usCurve != null && usCurve > 0;
-  const dxyStrong = dxyPct != null && dxyPct > 0.3;
-  if (!riskOff && spxUp && curvePos && !dxyStrong)
-    return { regime: 'GOLDILOCKS',   cls: 'regime-goldilocks',  note: 'Growth without excessive inflation — equities rallying, USD soft, spreads tight.' };
-  if (!riskOff && spxUp && dxyStrong)
-    return { regime: 'REFLATION',    cls: 'regime-reflation',   note: 'Growth + rising inflation pressures — commodities bid, yields climbing, USD firm.' };
-  if (riskOff && !spxUp && dxyStrong)
-    return { regime: 'STAGFLATION',  cls: 'regime-stagflation', note: 'Growth slowing but inflation sticky — worst case for EUR/USD and risk assets.' };
-  if (riskOff && !spxUp && !dxyStrong)
-    return { regime: 'DEFLATION',    cls: 'regime-deflation',   note: 'Growth and inflation falling — bonds rally, equities under pressure, USD bid.' };
-  return { regime: 'MIXED',         cls: 'regime-mixed',       note: 'Conflicting signals — no clear macro regime established. Monitor closely.' };
+// ═══════════════════════════════════════════════════════════════
+//  CROSS-ASSET — Yahoo Finance (DXY, VIX, SPX, HYG, Gold)
+// ═══════════════════════════════════════════════════════════════
+async function fetchYahoo(ticker){
+  const ck=`yh_${ticker}`;
+  const c=CACHE.get(ck,6*3600*1000); if(c) return c;
+  try{
+    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=90d`;
+    const r=await pfetch(url);
+    const d=await r.json();
+    const q=d.chart.result[0];
+    const closes=q.indicators.quote[0].close.filter(v=>v!=null);
+    const result=normResult(closes);
+    CACHE.set(ck,result);
+    return result;
+  }catch(e){ console.warn(`Yahoo ${ticker}`,e); return null; }
 }
 
-function detectRisk(vix, spxPct) {
-  if (vix?.price > 25 || (spxPct != null && spxPct < -0.5))
-    return { env: 'RISK OFF', cls: 'risk-off',    note: 'Elevated volatility and/or equities declining. Defensive positioning favoured.' };
-  if (vix?.price != null && vix.price < 18 && spxPct != null && spxPct > 0.5)
-    return { env: 'RISK ON',  cls: 'risk-on',     note: 'Low volatility with equities rallying. Markets in appetite mode.' };
-  return { env: 'NEUTRAL',   cls: 'risk-neutral', note: 'Mixed signals — neither strongly risk-on nor risk-off.' };
+// ═══════════════════════════════════════════════════════════════
+//  US YIELDS — FRED (St. Louis Fed, 1-day lag, daily series)
+// ═══════════════════════════════════════════════════════════════
+async function fetchFRED(seriesId,limit=90){
+  const ck=`fred_${seriesId}`;
+  const c=CACHE.get(ck); if(c) return c;
+  const key='b2b3bbae5e2c732c442f2e1f6b7766b9';
+  try{
+    const url=`https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${key}&file_type=json&limit=${limit}&sort_order=desc`;
+    const r=await pfetch(url);
+    const d=await r.json();
+    const obs=d.observations?.filter(o=>o.value!=='.').reverse();
+    if(!obs?.length) return null;
+    const closes=obs.map(o=>parseFloat(o.value));
+    const result=normResult(closes);
+    CACHE.set(ck,result);
+    FRESHNESS.us='1-DAY LAG — FRED';
+    return result;
+  }catch(e){ console.warn(`FRED ${seriesId}`,e); return null; }
 }
 
-function sdLabel(price, stats) {
-  if (!stats || !price) return 'Near mean';
-  const z = (price - stats.mean) / stats.sd;
-  if (z > 1.8) return 'At +2 SD — reversion zone';
-  if (z > 0.8) return 'Above mean — elevated';
-  if (z < -1.8) return 'At −2 SD — reversion zone';
-  if (z < -0.8) return 'Below mean — oversold';
+// ═══════════════════════════════════════════════════════════════
+//  EUR/DE YIELDS — ECB Statistical Data Warehouse (DAILY)
+// ═══════════════════════════════════════════════════════════════
+async function fetchECB(seriesKey){
+  const ck=`ecb_${seriesKey}`;
+  const c=CACHE.get(ck); if(c) return c;
+  try{
+    const url=`https://data-api.ecb.europa.eu/service/data/${seriesKey}?lastNObservations=90&format=jsondata`;
+    const r=await pfetch(url);
+    const d=await r.json();
+    const series=d.dataSets?.[0]?.series;
+    if(!series) return null;
+    const key=Object.keys(series)[0];
+    const obs=series[key]?.observations;
+    if(!obs) return null;
+    const indices=Object.keys(obs).map(Number).sort((a,b)=>a-b);
+    const closes=indices.map(i=>{ const v=obs[i]?.[0]; return (v!=null&&v!=='NaN')?parseFloat(v):null; }).filter(v=>v!==null);
+    if(!closes.length) return null;
+    const result=normResult(closes);
+    CACHE.set(ck,result);
+    FRESHNESS.ecb='DAILY — ECB SDW';
+    return result;
+  }catch(e){ console.warn(`ECB ${seriesKey}`,e); return null; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UK GILT YIELDS — Bank of England Statistics API (DAILY)
+//  Series IUDMNPY = instantaneous nominal par yield, 10Y
+//  Series IUDBEDR = 2Y (nominal par yield 2Y)
+// ═══════════════════════════════════════════════════════════════
+async function fetchBoE(seriesCode){
+  const ck=`boe_${seriesCode}`;
+  const c=CACHE.get(ck); if(c) return c;
+  try{
+    const today=new Date();
+    const from=new Date(today); from.setFullYear(from.getFullYear()-1);
+    // BoE date format: DD/MM/YYYY
+    const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const url=`https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp?Travel=NIx&FromSeries=1&ToSeries=50&DAT=RNG&FD=${fmt(from)}&TD=${fmt(today)}&FNY=&CSVF=TT&html.x=66&html.y=26&SeriesCodes=${seriesCode}&UsingCodes=Y&LANG=EN&Serialise=Y`;
+    const r=await pfetch(url);
+    const txt=await r.text();
+    const lines=txt.trim().split('\n').slice(1).filter(l=>l.trim());
+    const closes=lines.map(l=>{
+      const parts=l.split(',');
+      const v=parseFloat(parts[parts.length-1]);
+      return isNaN(v)?null:v;
+    }).filter(v=>v!==null);
+    if(!closes.length) return null;
+    const result=normResult(closes);
+    CACHE.set(ck,result);
+    FRESHNESS.boe='DAILY — BoE';
+    return result;
+  }catch(e){ console.warn(`BoE ${seriesCode}`,e); return null; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  JAPAN JGB YIELDS — Ministry of Finance Japan (DAILY CSV)
+//  URL: mof.go.jp — CSV with tenors: 1Y,2Y,...,10Y,...,40Y
+//  Column index (0-based): 0=date, 1=1Y, 2=2Y, ..., 10=10Y
+// ═══════════════════════════════════════════════════════════════
+async function fetchMoF(colIdx=10){
+  const ck=`mof_${colIdx}`;
+  const c=CACHE.get(ck); if(c) return c;
+  try{
+    const url='https://www.mof.go.jp/english/jgbs/reference/interest_rate/jgbcme.csv';
+    const r=await pfetch(url);
+    const txt=await r.text();
+    const lines=txt.trim().split('\n');
+    // Skip header rows (usually 2 header lines in MoF CSV)
+    const dataLines=lines.filter(l=>{
+      const first=l.split(',')[0].trim().replace(/"/g,'');
+      // Date lines start with a date like "2024/01/04"
+      return /^\d{4}\/\d{2}\/\d{2}/.test(first);
+    }).slice(-90);
+    const closes=dataLines.map(l=>{
+      const cols=l.split(',');
+      const v=parseFloat(cols[colIdx]);
+      return isNaN(v)?null:v;
+    }).filter(v=>v!==null);
+    if(!closes.length) return null;
+    const result=normResult(closes);
+    CACHE.set(ck,result);
+    FRESHNESS.mof='DAILY — MoF Japan';
+    return result;
+  }catch(e){ console.warn('MoF Japan',e); return null; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CANADA YIELDS — Bank of Canada Valet API (DAILY JSON)
+//  V39055 = Government of Canada benchmark bond yield, 10-year
+//  V39051 = Government of Canada benchmark bond yield, 2-year
+// ═══════════════════════════════════════════════════════════════
+async function fetchBoC(seriesId){
+  const ck=`boc_${seriesId}`;
+  const c=CACHE.get(ck); if(c) return c;
+  try{
+    const url=`https://www.bankofcanada.ca/valet/observations/${seriesId}/json?recent=90`;
+    const r=await pfetch(url);
+    const d=await r.json();
+    const obs=d.observations?.filter(o=>o[seriesId]?.v!=null);
+    if(!obs?.length) return null;
+    const closes=obs.map(o=>parseFloat(o[seriesId].v)).filter(v=>!isNaN(v));
+    const result=normResult(closes);
+    CACHE.set(ck,result);
+    FRESHNESS.boc='DAILY — BoC Valet API';
+    return result;
+  }catch(e){ console.warn(`BoC ${seriesId}`,e); return null; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  AUSTRALIA YIELDS — RBA Statistics (DAILY, try first)
+//  Fallback: FRED monthly series IRLTLT01AUM156N
+// ═══════════════════════════════════════════════════════════════
+async function fetchRBA(){
+  const ck='rba_10y';
+  const c=CACHE.get(ck); if(c) return c;
+  // --- Attempt 1: RBA Statistics CSV (Table F2 - Capital Market Yields) ---
+  try{
+    // RBA publishes F2 daily data; direct CSV URL for recent data
+    const url='https://www.rba.gov.au/statistics/tables/xls-hist/f02dhist.xls';
+    const r=await pfetch(url,8000);
+    // If we get here, the request succeeded but XLS is not easily parsed in browser
+    // Try the more recent shorter file instead
+    throw new Error('XLS not parseable without SheetJS');
+  }catch(e){}
+
+  // --- Attempt 2: RBA direct stats endpoint for overnight cash rate + bond yields ---
+  try{
+    // RBA publishes a simple CSV through their statistics portal
+    const url='https://www.rba.gov.au/statistics/tables/xls/f02d.xls';
+    const r=await pfetch(url,8000);
+    // Still XLS — skip
+    throw new Error('XLS format');
+  }catch(e){}
+
+  // --- Attempt 3: Yahoo Finance for AUS 10Y (GACGB10 or AU10YT=RR) ---
+  try{
+    const r=await fetchYahoo('AU10YT=RR');
+    if(r&&r.price>0){
+      CACHE.set(ck,r);
+      FRESHNESS.rba='DAILY — Yahoo (AU10Y)';
+      return r;
+    }
+  }catch(e){}
+
+  // --- Fallback: FRED monthly series (clearly flagged as monthly) ---
+  try{
+    const r=await fetchFRED('IRLTLT01AUM156N',24);
+    if(r){
+      FRESHNESS.rba='MONTHLY — FRED fallback';
+      document.getElementById('fr-rba').textContent='MONTHLY FALLBACK';
+      document.getElementById('fr-rba').style.color='var(--red)';
+      return r;
+    }
+  }catch(e){}
+
+  FRESHNESS.rba='UNAVAILABLE';
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════
+const f    = (n,d=2)  => n!=null?n.toFixed(d):'—';
+const fp   = (n,d=5)  => n!=null?n.toFixed(d):'—';
+const pct  = p        => p!=null?(p>0?'+':'')+p.toFixed(2)+'%':'—';
+const bp   = v        => v!=null?(v>0?'+':'')+v.toFixed(0)+'bp':'—';
+const cc   = v        => v==null?'neu':v>0?'pos':v<0?'neg':'neu';
+const fmtZ = z        => z!=null?(z>=0?'+':'')+z.toFixed(2):'—';
+
+function zColor(z){
+  if(z==null) return 'var(--text3)';
+  if(z>2) return 'var(--red)'; if(z>1) return 'var(--amber)';
+  if(z>-1) return 'var(--green)'; if(z>-2) return 'var(--amber)';
+  return 'var(--teal)';
+}
+function zLabel(z){
+  if(z==null) return '—';
+  if(z>2) return 'EXTREME HI'; if(z>1) return 'ELEVATED';
+  if(z>-1) return 'NORMAL'; if(z>-2) return 'DEPRESSED';
+  return 'EXTREME LO';
+}
+function curveShape(y2,y10){
+  if(y2==null||y10==null) return null;
+  const sp=y10-y2;
+  if(sp<-0.25) return{label:'INVERTED',cls:'ci',note:`2s10s: ${sp.toFixed(2)}% — recessionary signal`};
+  if(sp<0.15)  return{label:'FLAT',    cls:'cf',note:`2s10s: ${sp>=0?'+':''}${sp.toFixed(2)}% — transition / uncertainty`};
+  if(sp<0.75)  return{label:'NORMAL',  cls:'cn',note:`2s10s: +${sp.toFixed(2)}% — growth positive`};
+  return            {label:'STEEP',   cls:'cs',note:`2s10s: +${sp.toFixed(2)}% — steep, reflation signal`};
+}
+function pairBias(z,usdBase=false){
+  if(z==null) return{label:'—',cls:'b-neut'};
+  if(z>1.2) return usdBase?{label:'BEARISH',cls:'b-bear'}:{label:'BULLISH',cls:'b-bull'};
+  if(z<-1.2) return usdBase?{label:'BULLISH',cls:'b-bull'}:{label:'BEARISH',cls:'b-bear'};
+  return{label:'NEUTRAL',cls:'b-neut'};
+}
+function sdLabel(price,stats){
+  if(!stats||!price) return 'Near mean';
+  const z=(price-stats.mean)/stats.sd;
+  if(z>1.8) return 'At +2 SD — reversion zone';
+  if(z>0.8) return 'Above mean — elevated';
+  if(z<-1.8) return 'At −2 SD — reversion zone';
+  if(z<-0.8) return 'Below mean — oversold';
   return 'Near mean — neutral';
 }
 
-// ─── FORMAT HELPERS ──────────────────────────────────────────────────────────
-const f   = (n, d=2) => n != null ? n.toFixed(d) : '—';
-const fp  = (n, d=5) => n != null ? n.toFixed(d) : '—';
-const pct = p => p != null ? (p > 0 ? '+' : '') + p.toFixed(2) + '%' : '—';
-const bp  = v => v != null ? (v > 0 ? '+' : '') + v.toFixed(0) + 'bp' : '—';
-const cc  = v => v == null ? 'neu' : v > 0 ? 'pos' : v < 0 ? 'neg' : 'neu';
+// ═══════════════════════════════════════════════════════════════
+//  REGIME / RISK  (preserved from original)
+// ═══════════════════════════════════════════════════════════════
+function detectRegime(vix,spxPct,usCurve,dxyPct){
+  const riskOff=vix?.price>25, spxUp=spxPct!=null&&spxPct>0;
+  const curvePos=usCurve!=null&&usCurve>0, dxyStrong=dxyPct!=null&&dxyPct>0.3;
+  if(!riskOff&&spxUp&&curvePos&&!dxyStrong) return{r:'GOLDILOCKS',cls:'rg',note:'Growth without excessive inflation — equities rallying, USD soft, spreads tight.'};
+  if(!riskOff&&spxUp&&dxyStrong)            return{r:'REFLATION', cls:'rfl',note:'Growth + rising inflation — commodities bid, yields climbing, USD firm.'};
+  if(riskOff&&!spxUp&&dxyStrong)            return{r:'STAGFLATION',cls:'rst',note:'Growth slowing, inflation sticky — worst case for EUR/USD and risk assets.'};
+  if(riskOff&&!spxUp&&!dxyStrong)           return{r:'DEFLATION', cls:'rdf',note:'Growth and inflation falling — bonds rally, equities under pressure, USD bid.'};
+  return{r:'MIXED',cls:'rmx',note:'Conflicting signals — no clear macro regime. Monitor closely.'};
+}
+function detectRisk(vix,spxPct){
+  if(vix?.price>25||(spxPct!=null&&spxPct<-0.5)) return{e:'RISK OFF',cls:'rof',note:'Elevated volatility / equities declining. Defensive positioning favoured.'};
+  if(vix?.price!=null&&vix.price<18&&spxPct!=null&&spxPct>0.5) return{e:'RISK ON',cls:'ron',note:'Low volatility + equities rallying. Markets in appetite mode.'};
+  return{e:'NEUTRAL',cls:'rne',note:'Mixed signals — neither strongly risk-on nor risk-off.'};
+}
 
-// ─── MAIN ────────────────────────────────────────────────────────────────────
-async function loadAll() {
-  const btn = document.getElementById('refreshBtn');
-  btn.classList.add('spinning');
-  document.getElementById('mainContent').innerHTML = `
-    <div class="loading-screen"><div class="spinner"></div>
-    <div>Fetching live market data…</div>
-    <div class="loading-step">EUR/USD · DXY · VIX · S&amp;P 500 · AUD/JPY · HYG · US Yields (FRED) · DE Yields (ECB)</div></div>`;
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let S={};
 
-  // Fetch everything in parallel
-  const [eurusd, dxy, vix, audjpy, spx, hyg, us10y, us2y, de10y, de2y] = await Promise.all([
-    fetchEURUSD(),
-    fetchYahoo('DX-Y.NYB'),
-    fetchYahoo('^VIX'),
-    fetchYahoo('AUDJPY=X'),
-    fetchYahoo('^GSPC'),
-    fetchYahoo('HYG'),
-    fetchFRED('GS10'),
-    fetchFRED('GS2'),
-    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'),
-    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'),
-  ]);
+// ═══════════════════════════════════════════════════════════════
+//  UPDATE FRESHNESS BAR
+// ═══════════════════════════════════════════════════════════════
+function updateFreshnessBar(){
+  const set=(id,text,col)=>{
+    const el=document.getElementById(id);
+    if(el){ el.textContent=text; el.style.color=col; }
+  };
+  set('fr-fx',  S.eurusd?'DAILY':'ERROR',      S.eurusd?'var(--green)':'var(--red)');
+  set('fr-us',  S.us10y?'1-DAY LAG':'ERROR',   S.us10y?'var(--amber)':'var(--red)');
+  set('fr-ecb', S.de10y?'DAILY':'ERROR',        S.de10y?'var(--green)':'var(--red)');
+  set('fr-boe', S.uk10y?'DAILY':'ERROR',        S.uk10y?'var(--green)':'var(--red)');
+  set('fr-mof', S.jp10y?'DAILY':'ERROR',        S.jp10y?'var(--green)':'var(--red)');
+  set('fr-boc', S.ca10y?'DAILY':'ERROR',        S.ca10y?'var(--green)':'var(--red)');
+  // RBA freshness already set during fetch
+  if(!document.getElementById('fr-rba').textContent.includes('MONTHLY')){
+    set('fr-rba', S.au10y?'DAILY':'UNAVAIL',    S.au10y?'var(--green)':'var(--red)');
+  }
+  const now=new Date();
+  set('fr-updated', now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' UTC', 'var(--accent)');
+}
 
-  btn.classList.remove('spinning');
-  document.getElementById('ts').textContent = new Date().toLocaleString('en-GB', {
-    weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'
-  });
+// ═══════════════════════════════════════════════════════════════
+//  TICKER STRIP
+// ═══════════════════════════════════════════════════════════════
+function updateTicker(){
+  const set=(id,val,p)=>{
+    const ve=document.getElementById('t-'+id), ce=document.getElementById('tc-'+id);
+    if(!p){ if(ve) ve.textContent='—'; return; }
+    const c=((p.price-p.prev)/p.prev)*100;
+    if(ve) ve.textContent=val;
+    if(ce){ ce.textContent=(c>=0?'+':'')+c.toFixed(2)+'%'; ce.className=`tc ${c>0?'pos':c<0?'neg':'neu'}`; }
+  };
+  set('eurusd',S.eurusd?.price?.toFixed(5),S.eurusd);
+  set('gbpusd',S.gbpusd?.price?.toFixed(5),S.gbpusd);
+  set('audusd',S.audusd?.price?.toFixed(5),S.audusd);
+  set('usdjpy',S.usdjpy?.price?.toFixed(2), S.usdjpy);
+  set('usdcad',S.usdcad?.price?.toFixed(5), S.usdcad);
+  set('audjpy',S.audjpy?.price?.toFixed(3), S.audjpy);
+  set('dxy',   S.dxy?.price?.toFixed(2),    S.dxy);
+  set('vix',   S.vix?.price?.toFixed(1),    S.vix);
+  set('spx',   S.spx?.price?.toFixed(0),    S.spx);
+  set('gold',  S.gold?.price?.toFixed(0),   S.gold);
+}
 
-  // Derived values
-  const closes   = eurusd?.closes || [];
-  const rsi      = calcRSI(closes);
-  const stats    = calcStats(closes, 20);
-  const usCurve  = us10y != null && us2y  != null ? (us10y - us2y)  * 100 : null;
-  const spread10 = us10y != null && de10y != null ? (us10y - de10y) * 100 : null;
-  const spread2  = us2y  != null && de2y  != null ? (us2y  - de2y)  * 100 : null;
+// ═══════════════════════════════════════════════════════════════
+//  RENDER HELPERS
+// ═══════════════════════════════════════════════════════════════
+function renderZRow(label,z,source=''){
+  if(z==null) return `<div class="zrow"><div class="zl">${label}</div><div style="font-size:10px;color:var(--text3)">Loading…</div></div>`;
+  const pct=Math.min(Math.abs(z)/3,1)*50;
+  const left=z>=0?'50%':`${50-pct}%`;
+  const w=pct+'%', col=zColor(z);
+  return `<div class="zrow">
+    <div class="zl">${label}</div>
+    <div class="zt"><div class="zm"></div><div class="zf" style="left:${left};width:${w};background:${col}"></div></div>
+    <div class="zv" style="color:${col}">${fmtZ(z)}</div>
+    <div class="zsig" style="color:${col}">${zLabel(z)}</div>
+  </div>`;
+}
 
-  const regime   = detectRegime(vix, spx?.pct, usCurve, dxy?.pct);
-  const riskEnv  = detectRisk(vix, spx?.pct);
+function renderMR(p,dp=5){
+  if(!p?.closes||p.closes.length<20) return '<div style="color:var(--text3);font-size:12px;padding:8px 0">Need 20 days history for SD bands</div>';
+  const b=ZS.sdBands(p.closes,20);
+  return [
+    {st:'background:var(--rdim);border:1px solid rgba(255,107,107,.2)',l:'+2 SD — extreme',v:b.p2u,c:'var(--red)'},
+    {st:'background:rgba(255,107,107,.06)',l:'+1 SD — sell zone',v:b.p1u,c:'var(--red)'},
+    {st:'',l:'20-day mean',v:b.mean,c:'var(--amber)',cls:'sd-mean'},
+    {st:'',l:'▶ Current price',v:b.current,c:'#c5bfff',cls:'sd-cur'},
+    {st:'background:rgba(0,214,143,.06)',l:'−1 SD — buy zone',v:b.p1d,c:'var(--green)'},
+    {st:'background:var(--gdim);border:1px solid rgba(0,214,143,.2)',l:'−2 SD — extreme',v:b.p2d,c:'var(--green)'},
+  ].map(r=>`<div class="sd-row ${r.cls||''}" style="${r.st}">
+    <span class="sdl" style="${r.v===b.current?'color:#c5bfff':''}">${r.l}</span>
+    <span class="sdv" style="color:${r.c}">${r.v.toFixed(dp)}</span>
+  </div>`).join('');
+}
 
-  // Carry signal
-  const carryPct = audjpy?.pct;
-  const carry = carryPct > 0.5
-    ? { label: 'CARRY POSITIVE', col: 'var(--green)', score: Math.min(92, 60 + carryPct * 10), note: 'AUD/JPY rising — risk appetite healthy, carry trades being added.' }
-    : carryPct < -0.5
-    ? { label: 'CARRY NEGATIVE', col: 'var(--red)',   score: Math.max(8,  40 + carryPct * 10), note: 'AUD/JPY falling — carry unwind in progress, risk-off pressure building.' }
-    : { label: 'CARRY NEUTRAL',  col: 'var(--amber)', score: 50,                                note: 'AUD/JPY flat — carry trades neither being added nor unwound.' };
+function renderCurveShape(shape){
+  if(!shape) return '<div style="font-size:10px;color:var(--text3)">Insufficient yield data</div>';
+  return `<span class="curve-pill ${shape.cls}">${shape.label}</span><div style="font-size:10px;color:var(--text3);margin-top:3px">${shape.note}</div>`;
+}
 
-  // HY signal (HYG price ↑ = spreads tightening = risk on)
-  const hygPct = hyg?.pct;
-  const hy = hygPct > 0.3
-    ? { label: 'TIGHTENING', col: 'var(--green)', note: `HYG +${f(hygPct)}% — HY spreads tightening, credit risk appetite improving.` }
-    : hygPct < -0.3
-    ? { label: 'WIDENING',   col: 'var(--red)',   note: `HYG ${f(hygPct)}% — HY spreads widening, credit stress rising.` }
-    : { label: 'STABLE',     col: 'var(--amber)', note: `HYG ${pct(hygPct)} — HY spreads broadly stable, no stress signal.` };
+function renderYieldRow(label,yData,source,freshTag){
+  if(!yData||yData.price==null) return `<div class="spread-row"><span class="sn">${label}</span><span style="font-size:10px;color:var(--text3)">Loading…</span></div>`;
+  const chg=yData.price-yData.prev;
+  const col=chg>0?'var(--red)':chg<0?'var(--green)':'var(--text3)';
+  const arr=chg>0?'▲':chg<0?'▼':'—';
+  return `<div class="spread-row">
+    <span class="sn">${label} <span class="freshness-tag ${freshTag}">${source}</span></span>
+    <span class="sv">${f(yData.price)}% <span style="font-size:9px;color:${col}">${arr}${Math.abs(chg).toFixed(3)}</span></span>
+  </div>`;
+}
 
-  // Yield data availability
-  const usYieldOk = us10y != null || us2y  != null;
-  const deYieldOk = de10y != null || de2y  != null;
+// ═══════════════════════════════════════════════════════════════
+//  OVERVIEW PAGE
+// ═══════════════════════════════════════════════════════════════
+function renderOverview(){
+  const usCurve=S.us10y&&S.us2y?(S.us10y.price-S.us2y.price)*100:null;
+  const sp_usde=S.us10y&&S.de10y?(S.us10y.price-S.de10y.price)*100:null;
+  const sp_usuk=S.us10y&&S.uk10y?(S.us10y.price-S.uk10y.price)*100:null;
+  const sp_usjp=S.us10y&&S.jp10y?(S.us10y.price-S.jp10y.price)*100:null;
+  const sp_usau=S.us10y&&S.au10y?(S.us10y.price-S.au10y.price)*100:null;
+  const sp_usca=S.us10y&&S.ca10y?(S.us10y.price-S.ca10y.price)*100:null;
+  const regime=detectRegime(S.vix,S.spx?.pct,usCurve,S.dxy?.pct);
+  const riskEnv=detectRisk(S.vix,S.spx?.pct);
+  const usShape=curveShape(S.us2y?.price,S.us10y?.price);
 
-  // Missing data banner
-  const missing = [
-    !eurusd && 'EUR/USD', !dxy && 'DXY', !vix && 'VIX',
-    !spx && 'S&P 500', !audjpy && 'AUD/JPY', !hyg && 'HYG',
-    !usYieldOk && 'US Yields', !deYieldOk && 'DE Yields'
-  ].filter(Boolean);
+  const pairs=[
+    {key:'eurusd',sym:'EUR/USD',dp:5,usdBase:false,driver:'ECB/Fed divergence'},
+    {key:'gbpusd',sym:'GBP/USD',dp:5,usdBase:false,driver:'BoE cutting cycle'},
+    {key:'audusd',sym:'AUD/USD',dp:5,usdBase:false,driver:'China + commodity'},
+    {key:'usdjpy',sym:'USD/JPY',dp:2,usdBase:true, driver:'US–JP carry'},
+    {key:'usdcad',sym:'USD/CAD',dp:5,usdBase:true, driver:'BoC + oil'},
+    {key:'audjpy',sym:'AUD/JPY',dp:3,usdBase:false,driver:'Risk proxy'},
+  ];
 
-  // SPX narrative
-  const spxNote = spx?.pct > 1   ? '🟢 Strong rally — risk-on signal, EUR/USD may find support.'
-    : spx?.pct > 0               ? '🟡 Mild gains — slightly risk-on, watch for continuation.'
-    : spx?.pct < -1              ? '🔴 Sharp selloff — risk-off; USD likely to strengthen.'
-    : spx?.pct < 0               ? '🟠 Mild decline — slight risk-off tone, monitor DXY.'
-    : '⚪ S&P 500 broadly flat — equity market neutral.';
+  const pairsHtml=pairs.map(({key,sym,dp,usdBase,driver})=>{
+    const p=S[key]; if(!p) return '';
+    const z=ZS.latest(p.closes);
+    const bias=pairBias(z,usdBase);
+    const chgC=p.pct>0?'pos':'neg';
+    return `<div class="pair-row" onclick="showTabById('${key}')">
+      <div class="pr-sym">${sym}</div>
+      <div class="pr-price ${chgC}">${p.price.toFixed(dp)}</div>
+      <div class="pr-chg ${chgC}">${pct(p.pct)}</div>
+      <div class="pr-bias ${bias.cls}">${bias.label}</div>
+      <div class="pr-z" style="color:${zColor(z)}">${fmtZ(z)}</div>
+      <div class="pr-note">${driver}</div>
+    </div>`;
+  }).join('');
 
-  // Macro context note
-  const macroNote = spread10 != null
-    ? `US–DE 10Y spread is ${bp(spread10)}. ${spread10 > 200 ? 'Wide spread favours USD strength and weighs on EUR/USD.' : spread10 < 100 ? 'Narrow spread reduces USD advantage — supportive for EUR/USD.' : 'Moderate spread — USD has some yield advantage but not extreme.'}`
-    : 'Yield spread data loading — wider US–DE spread generally = USD strength = EUR/USD bearish pressure.';
+  const missing=[!S.eurusd&&'EUR/USD',!S.dxy&&'DXY',!S.vix&&'VIX',!S.us10y&&'US Yields'].filter(Boolean);
 
-  const sdNote = stats
-    ? `Current price ${eurusd ? eurusd.price.toFixed(5) : '—'} is ${sdLabel(eurusd?.price, stats)}. 20-day mean: ${fp(stats.mean)}. 1 SD band: ${fp(stats.p1dn)} – ${fp(stats.p1up)}.`
-    : 'Insufficient price history to compute mean reversion levels.';
-
-  document.getElementById('mainContent').innerHTML = `
-
-${missing.length ? `<div class="data-note">⚠️ Still loading: <strong>${missing.join(', ')}</strong>. Markets may be closed or the data proxy is temporarily down. Try refreshing in a minute.</div>` : ''}
-
-<!-- REGIME + RISK ON/OFF -->
-<div class="regime-risk-row">
-  <div class="regime-card">
-    <div class="regime-card-title">🌐 Macro Regime</div>
-    <div class="regime-pill ${regime.cls}">${regime.regime}</div>
+  document.getElementById('tab-overview').innerHTML=`
+${missing.length?`<div class="data-note">⚠️ Still loading: <strong>${missing.join(', ')}</strong> — try refreshing.</div>`:''}
+<div class="g2 mb">
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--accent)"></span>🌐 Macro Regime</div>
+    <div class="regime-pill ${regime.cls}">${regime.r}</div>
     <div class="regime-note">${regime.note}</div>
+    ${usShape?`<div style="margin-top:10px">${renderCurveShape(usShape)}</div>`:''}
   </div>
-  <div class="regime-card">
-    <div class="regime-card-title">📡 Risk Environment</div>
-    <div class="risk-pill ${riskEnv.cls}">${riskEnv.env}</div>
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--amber)"></span>📡 Risk Environment</div>
+    <div class="risk-pill ${riskEnv.cls}">${riskEnv.e}</div>
     <div class="regime-note">${riskEnv.note}</div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3)">VIX: ${S.vix?S.vix.price.toFixed(1):'—'} · DXY: ${S.dxy?S.dxy.price.toFixed(2):'—'} · S&P: ${S.spx?S.spx.price.toFixed(0):'—'}</div>
   </div>
 </div>
-
-<!-- KEY METRICS -->
-<div class="metrics-row">
-  <div class="metric-card">
-    <div class="metric-label">EUR / USD</div>
-    <div class="metric-value">${eurusd ? eurusd.price.toFixed(5) : '—'}</div>
-    <div class="metric-change ${cc(eurusd?.pct)}">${pct(eurusd?.pct)}</div>
-    <div class="metric-tag">Frankfurter API</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">RSI (14)</div>
-    <div class="metric-value">${rsi ?? '—'}</div>
-    <div class="metric-change ${rsi > 70 ? 'neg' : rsi < 30 ? 'pos' : 'neu'}">${rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral'}</div>
-    <div class="metric-tag">${sdLabel(eurusd?.price, stats)}</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">DXY</div>
-    <div class="metric-value">${dxy ? dxy.price.toFixed(2) : '—'}</div>
-    <div class="metric-change ${cc(dxy?.pct)}">${pct(dxy?.pct)}</div>
-    <div class="metric-tag">USD strength index</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">VIX</div>
-    <div class="metric-value">${vix ? vix.price.toFixed(1) : '—'}</div>
-    <div class="metric-change ${vix?.price > 25 ? 'neg' : vix?.price < 15 ? 'pos' : 'neu'}">${vix?.price > 25 ? 'Elevated risk' : vix?.price < 15 ? 'Risk-on' : 'Normal'}</div>
-    <div class="metric-tag">Fear index</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">S&amp;P 500</div>
-    <div class="metric-value">${spx ? spx.price.toFixed(0) : '—'}</div>
-    <div class="metric-change ${cc(spx?.pct)}">${pct(spx?.pct)}</div>
-    <div class="metric-tag">${spx?.pct > 0.5 ? 'Rally' : spx?.pct < -0.5 ? 'Selloff' : 'Flat'}</div>
-  </div>
+<div class="gauto mb">
+  <div class="metric-card"><div class="ml">EUR/USD</div><div class="mv ${cc(S.eurusd?.pct)}">${S.eurusd?S.eurusd.price.toFixed(5):'—'}</div><div class="mch ${cc(S.eurusd?.pct)}">${pct(S.eurusd?.pct)}</div><div class="mt">Frankfurter · daily</div></div>
+  <div class="metric-card"><div class="ml">DXY</div><div class="mv ${cc(S.dxy?.pct)}">${S.dxy?S.dxy.price.toFixed(2):'—'}</div><div class="mch ${cc(S.dxy?.pct)}">${pct(S.dxy?.pct)}</div><div class="mt">Yahoo · daily</div></div>
+  <div class="metric-card"><div class="ml">VIX</div><div class="mv ${S.vix?.price>25?'neg':S.vix?.price<15?'pos':'neu'}">${S.vix?S.vix.price.toFixed(1):'—'}</div><div class="mch ${S.vix?.price>25?'neg':'pos'}">${S.vix?.price>25?'Elevated':S.vix?.price<15?'Risk-on':'Normal'}</div><div class="mt">Yahoo · daily</div></div>
+  <div class="metric-card"><div class="ml">US 10Y</div><div class="mv">${S.us10y?S.us10y.price.toFixed(2)+'%':'—'}</div><div class="mch ${cc(S.us10y?.pct)}">${pct(S.us10y?.pct)}</div><div class="mt">FRED · 1-day lag</div></div>
+  <div class="metric-card"><div class="ml">US–JP 10Y Spread</div><div class="mv ${sp_usjp>200?'neg':'pos'}">${sp_usjp!=null?bp(sp_usjp):'—'}</div><div class="mt">${sp_usjp>200?'Extreme carry':'Normal'}</div></div>
+  <div class="metric-card"><div class="ml">US Curve 2s10s</div><div class="mv ${usCurve!=null&&usCurve<0?'neg':'pos'}">${bp(usCurve)}</div><div class="mt">${usCurve!=null&&usCurve<0?'INVERTED':'Positive'}</div></div>
 </div>
-
-<!-- YIELDS + SD LEVELS -->
-<div class="main-grid">
+<div class="g3 mb">
   <div class="card">
-    <div class="card-title">
-      <span class="card-title-dot dot-blue"></span>Yield spreads
-      <span class="status-badge ${usYieldOk && deYieldOk ? 'status-lag' : usYieldOk || deYieldOk ? 'status-lag' : 'status-err'}">
-        ${usYieldOk || deYieldOk ? '1-DAY LAG' : 'ERROR — try refresh'}
-      </span>
-    </div>
-    <div class="spread-row"><span class="spread-name">US 10Y <span style="font-size:10px;color:var(--text3)">(FRED)</span></span><span class="spread-val">${f(us10y)}%</span></div>
-    <div class="spread-row"><span class="spread-name">US 2Y <span style="font-size:10px;color:var(--text3)">(FRED)</span></span><span class="spread-val">${f(us2y)}%</span></div>
-    <div class="spread-row"><span class="spread-name">DE 10Y <span style="font-size:10px;color:var(--text3)">(ECB)</span></span><span class="spread-val">${f(de10y)}%</span></div>
-    <div class="spread-row"><span class="spread-name">DE 2Y <span style="font-size:10px;color:var(--text3)">(ECB)</span></span><span class="spread-val">${f(de2y)}%</span></div>
-    <div class="spread-row section-start">
-      <span class="spread-name">US curve (10Y–2Y)</span>
-      <span class="spread-val ${usCurve != null ? (usCurve > 0 ? 'pos' : 'neg') : ''}">${bp(usCurve)}</span>
-    </div>
-    <div class="spread-row">
-      <span class="spread-name">US–DE 10Y spread</span>
-      <span class="spread-val highlight">${bp(spread10)}</span>
-    </div>
-    <div class="spread-row">
-      <span class="spread-name">US–DE 2Y spread</span>
-      <span class="spread-val highlight">${bp(spread2)}</span>
-    </div>
+    <div class="ct"><span class="ctd" style="background:var(--blue)"></span>All Pairs — Live Bias</div>
+    ${pairsHtml}
   </div>
-
   <div class="card">
-    <div class="card-title"><span class="card-title-dot dot-green"></span>Mean reversion levels (20-day)</div>
-    <div class="sd-row" style="background:var(--red-dim);border:1px solid rgba(255,107,107,.2);">
-      <span class="sd-label">+2 SD — extreme</span><span class="sd-val" style="color:var(--red)">${fp(stats?.p2up)}</span>
-    </div>
-    <div class="sd-row" style="background:rgba(255,107,107,.06);">
-      <span class="sd-label">+1 SD — sell zone</span><span class="sd-val" style="color:var(--red)">${fp(stats?.p1up)}</span>
-    </div>
-    <div class="sd-row mean">
-      <span class="sd-label">20-day mean</span><span class="sd-val" style="color:var(--amber)">${fp(stats?.mean)}</span>
-    </div>
-    <div class="sd-row current">
-      <span class="sd-label" style="color:#c5bfff">▶ Current price</span>
-      <span class="sd-val" style="color:#c5bfff">${eurusd ? eurusd.price.toFixed(5) : '—'}</span>
-    </div>
-    <div class="sd-row" style="background:rgba(0,214,143,.06);">
-      <span class="sd-label">-1 SD — buy zone</span><span class="sd-val" style="color:var(--green)">${fp(stats?.p1dn)}</span>
-    </div>
-    <div class="sd-row" style="background:var(--green-dim);border:1px solid rgba(0,214,143,.2);">
-      <span class="sd-label">-2 SD — extreme</span><span class="sd-val" style="color:var(--green)">${fp(stats?.p2dn)}</span>
-    </div>
+    <div class="ct"><span class="ctd" style="background:var(--green)"></span>Daily Yield Spreads<span class="badge b-live">ALL DAILY</span></div>
+    ${renderYieldRow('US 10Y',S.us10y,'FRED GS10','ft-1d')}
+    ${renderYieldRow('US 2Y', S.us2y, 'FRED GS2', 'ft-1d')}
+    ${renderYieldRow('DE 10Y',S.de10y,'ECB SDW',  'ft-daily')}
+    ${renderYieldRow('UK 10Y',S.uk10y,'BoE API',  'ft-daily')}
+    ${renderYieldRow('JP 10Y',S.jp10y,'MoF Japan','ft-daily')}
+    ${renderYieldRow('AU 10Y',S.au10y,'RBA',       S.au10y?'ft-daily':'ft-mo')}
+    ${renderYieldRow('CA 10Y',S.ca10y,'BoC Valet','ft-daily')}
+    <div class="spread-row ss"><span class="sn">US curve (2s10s)</span><span class="sv ${usCurve!=null?(usCurve>0?'pos':'neg'):''}">${bp(usCurve)}</span></div>
+    <div class="spread-row"><span class="sn">US–DE 10Y</span><span class="sv hl">${bp(sp_usde)}</span></div>
+    <div class="spread-row"><span class="sn">US–UK 10Y</span><span class="sv hl">${bp(sp_usuk)}</span></div>
+    <div class="spread-row"><span class="sn">US–JP 10Y</span><span class="sv hl">${bp(sp_usjp)}</span></div>
+    <div class="spread-row"><span class="sn">US–AU 10Y</span><span class="sv hl">${bp(sp_usau)}</span></div>
+    <div class="spread-row"><span class="sn">US–CA 10Y</span><span class="sv hl">${bp(sp_usca)}</span></div>
   </div>
-</div>
-
-<!-- AUD/JPY CARRY + S&P 500 + HY SPREADS -->
-<div class="wide-grid">
   <div class="card">
-    <div class="card-title"><span class="card-title-dot dot-amber"></span>AUD/JPY — Carry Proxy</div>
-    <div class="spread-row" style="border:none;padding:4px 0;">
-      <span class="spread-name">Price</span>
-      <span class="spread-val">${audjpy ? audjpy.price.toFixed(3) : '—'}</span>
-    </div>
-    <div class="spread-row" style="border:none;padding:4px 0 12px;">
-      <span class="spread-name">Day change</span>
-      <span class="spread-val ${cc(audjpy?.pct)}">${pct(audjpy?.pct)}</span>
-    </div>
-    <div class="carry-bar">
-      <div class="carry-fill" style="width:${carry.score}%;background:${carry.col}"></div>
-    </div>
-    <div style="font-size:12px;font-weight:700;letter-spacing:.06em;margin:8px 0 4px;color:${carry.col}">${carry.label}</div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.6;">${carry.note}</div>
+    <div class="ct"><span class="ctd" style="background:var(--pink)"></span>Z-Score Radar<span class="badge b-info">60D ROLLING</span></div>
+    ${pairs.map(({key,sym})=>renderZRow(sym,ZS.latest(S[key]?.closes))).join('')}
+    ${S.dxy?renderZRow('DXY',ZS.latest(S.dxy.closes)):''}
+    ${S.vix?renderZRow('VIX',ZS.latest(S.vix.closes)):''}
   </div>
-
-  <div class="card">
-    <div class="card-title"><span class="card-title-dot dot-blue"></span>S&amp;P 500</div>
-    <div class="spread-row" style="border:none;padding:4px 0;">
-      <span class="spread-name">Level</span>
-      <span class="spread-val">${spx ? spx.price.toFixed(0) : '—'}</span>
-    </div>
-    <div class="spread-row" style="border:none;padding:4px 0;">
-      <span class="spread-name">Day change</span>
-      <span class="spread-val ${cc(spx?.pct)}">${pct(spx?.pct)}</span>
-    </div>
-    <div class="spread-row" style="border:none;padding:4px 0 12px;">
-      <span class="spread-name">Point move</span>
-      <span class="spread-val ${cc(spx?.change)}">${spx ? (spx.change > 0 ? '+' : '') + spx.change.toFixed(0) : '—'}</span>
-    </div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:4px;">${spxNote}</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title"><span class="card-title-dot dot-pink"></span>HY Credit Spreads</div>
-    <div class="spread-row" style="border:none;padding:4px 0;">
-      <span class="spread-name">HYG ETF price</span>
-      <span class="spread-val">${hyg ? hyg.price.toFixed(2) : '—'}</span>
-    </div>
-    <div class="spread-row" style="border:none;padding:4px 0 12px;">
-      <span class="spread-name">Day change</span>
-      <span class="spread-val ${cc(hyg?.pct)}">${pct(hyg?.pct)}</span>
-    </div>
-    <div style="font-size:12px;font-weight:700;letter-spacing:.06em;margin:8px 0 4px;color:${hy.col}">SPREADS ${hy.label}</div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.6;">${hy.note}</div>
-  </div>
-</div>
-
-<!-- ANALYSIS NOTES -->
-<div class="analysis-grid">
-  <div class="analysis-card">
-    <div class="analysis-card-title">📊 Macro read</div>
-    <div class="analysis-card-body">${macroNote}</div>
-  </div>
-  <div class="analysis-card">
-    <div class="analysis-card-title">↔ Mean reversion setup</div>
-    <div class="analysis-card-body">${sdNote}</div>
-  </div>
-</div>
-
-<div class="footer">
-  EUR/USD · Frankfurter API &nbsp;·&nbsp;
-  DXY, VIX, S&amp;P 500, AUD/JPY, HYG · Yahoo Finance (via corsproxy.io) &nbsp;·&nbsp;
-  US Yields · FRED (St. Louis Fed, 1-day lag) &nbsp;·&nbsp;
-  DE Yields · ECB Statistical Data Warehouse (1-day lag)<br>
-  For informational purposes only. Not financial advice.
 </div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  PAIR PAGES  (shared template, all 6 pairs)
+// ═══════════════════════════════════════════════════════════════
+const PAIR_CFG={
+  eurusd:{sym:'EUR/USD',dp:5,usdBase:false,yA:'de10y',yA2:'de2y',yB:'us10y',yB2:'us2y',yALbl:'DE 10Y',yBLbl:'US 10Y',yASrc:'ECB SDW·daily',yBSrc:'FRED·1d'},
+  gbpusd:{sym:'GBP/USD',dp:5,usdBase:false,yA:'uk10y',yA2:null,    yB:'us10y',yB2:'us2y',yALbl:'UK 10Y',yBLbl:'US 10Y',yASrc:'BoE·daily',   yBSrc:'FRED·1d'},
+  audusd:{sym:'AUD/USD',dp:5,usdBase:false,yA:'au10y',yA2:null,    yB:'us10y',yB2:'us2y',yALbl:'AU 10Y',yBLbl:'US 10Y',yASrc:'RBA·daily',   yBSrc:'FRED·1d'},
+  usdjpy:{sym:'USD/JPY',dp:2,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'jp10y',yB2:null,  yALbl:'US 10Y',yBLbl:'JP 10Y',yASrc:'FRED·1d',    yBSrc:'MoF·daily'},
+  usdcad:{sym:'USD/CAD',dp:5,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'ca10y',yB2:null,  yALbl:'US 10Y',yBLbl:'CA 10Y',yASrc:'FRED·1d',    yBSrc:'BoC·daily'},
+  audjpy:{sym:'AUD/JPY',dp:3,usdBase:false,yA:'au10y',yA2:null,    yB:'jp10y',yB2:null,  yALbl:'AU 10Y',yBLbl:'JP 10Y',yASrc:'RBA·daily',  yBSrc:'MoF·daily'},
+};
+const PAIR_SIGNALS={
+  eurusd:[{n:'US Core PCE',v:'2.8% YoY',s:'vs 2% target',c:'var(--red)'},{n:'EZ CPI',v:'2.4%',s:'Near ECB target',c:'var(--green)'},{n:'ECB',v:'Cutting',s:'Jun 2024 −25bp',c:'var(--amber)'},{n:'Fed',v:'Hold',s:'5.25–5.50%',c:'var(--red)'},{n:'EZ PMI',v:'47.4',s:'Contraction',c:'var(--red)'},{n:'US ISM Mfg',v:'49.2',s:'Slight contraction',c:'var(--amber)'}],
+  gbpusd:[{n:'UK CPI (Apr)',v:'2.3%',s:'BoE target hit',c:'var(--green)'},{n:'UK Services CPI',v:'5.9%',s:'Sticky — concern',c:'var(--red)'},{n:'UK GDP Q1',v:'+0.6%',s:'Recovery underway',c:'var(--green)'},{n:'BoE',v:'Hold→Cut',s:'Aug/Sep 2024',c:'var(--amber)'},{n:'UK Unemployment',v:'4.3%',s:'Rising slowly',c:'var(--amber)'},{n:'BoE vote',v:'7-2 Hold',s:'Close to cutting',c:'var(--amber)'}],
+  audusd:[{n:'AU CPI Q1',v:'3.6% YoY',s:'Above RBA target',c:'var(--red)'},{n:'AU Unemployment',v:'3.9%',s:'Labour mkt tight',c:'var(--green)'},{n:'RBA',v:'Hold',s:'No cuts until 2025',c:'var(--amber)'},{n:'China NBS PMI',v:'50.4',s:'Marginal expansion',c:'var(--amber)'},{n:'Iron Ore',v:'$116/t',s:'+AUD corr',c:'var(--green)'},{n:'AU Trade Balance',v:'+$5.0B',s:'Surplus supportive',c:'var(--green)'}],
+  usdjpy:[{n:'US–JP 10Y spread',v:'~370bp',s:'Extreme carry',c:'var(--red)'},{n:'BoJ',v:'Ultra-easy',s:'0.0–0.1% rate',c:'var(--red)'},{n:'JP CPI',v:'2.2% YoY',s:'Above BoJ target',c:'var(--amber)'},{n:'JP Wage growth',v:'+2.1%',s:'BoJ hike trigger',c:'var(--amber)'},{n:'Intervention',v:'150+ zone',s:'MoF warning',c:'var(--red)'},{n:'JP GDP Q1',v:'−2.0%',s:'Contraction',c:'var(--red)'}],
+  usdcad:[{n:'WTI Crude',v:'~$78/bbl',s:'CAD supportive',c:'var(--amber)'},{n:'BoC Jun 2024',v:'−25bp',s:'First G7 cut',c:'var(--green)'},{n:'CA CPI',v:'2.7% YoY',s:'Near BoC target',c:'var(--green)'},{n:'CA Employment',v:'+90.4K',s:'Strong labour mkt',c:'var(--green)'},{n:'Fed vs BoC',v:'50bp gap',s:'USD carry adv.',c:'var(--amber)'},{n:'CA GDP',v:'+0.4% MoM',s:'March data',c:'var(--green)'}],
+  audjpy:[{n:'Carry spread',v:'+4.25%',s:'RBA 4.35 − BoJ 0.1',c:'var(--green)'},{n:'Risk proxy',s:'Risk-on = AJ rally',v:'SPX corr +0.82',c:'var(--green)'},{n:'China PMI',v:'50.4',s:'AUD demand proxy',c:'var(--amber)'},{n:'VIX corr',v:'−0.78',s:'Risk-off = AJ drops',c:'var(--amber)'},{n:'Iron Ore',v:'$116/t',s:'AUD commodity link',c:'var(--green)'},{n:'BoJ hike risk',v:'Watch 160+',s:'Intervention risk',c:'var(--red)'}],
+};
+
+function renderPairPage(key){
+  const cfg=PAIR_CFG[key]; if(!cfg) return;
+  const p=S[key]; const yA=S[cfg.yA], yB=S[cfg.yB];
+  const yA2=cfg.yA2?S[cfg.yA2]:null, yB2=cfg.yB2?S[cfg.yB2]:null;
+
+  const zPrice=ZS.latest(p?.closes);
+  const zEwma =ZS.latestEwma(p?.closes,30);
+  const zSpread=ZS.latestSpread(yA?.closes,yB?.closes);
+  const zDXY  =ZS.latest(S.dxy?.closes);
+  const bias   =pairBias(zPrice,cfg.usdBase);
+
+  const spread10=yA&&yB?(yA.price-yB.price)*100:null;
+  const yAShape=cfg.yA2?curveShape(yA2?.price,yA?.price):null;
+  const usShape=curveShape(S.us2y?.price,S.us10y?.price);
+  const sigs=PAIR_SIGNALS[key]||[];
+
+  const dp=cfg.dp;
+  const range20=p?.closes?.length>=20?{
+    lo:Math.min(...p.closes.slice(-20)).toFixed(dp>2?4:2),
+    hi:Math.max(...p.closes.slice(-20)).toFixed(dp>2?4:2)
+  }:null;
+
+  document.getElementById(`tab-${key}`).innerHTML=`
+<div class="gauto mb">
+  <div class="metric-card"><div class="ml">${cfg.sym}</div><div class="mv ${cc(p?.pct)}">${p?p.price.toFixed(dp):'—'}</div><div class="mch ${cc(p?.pct)}">${pct(p?.pct)}</div><div class="mt">Frankfurter · daily</div></div>
+  <div class="metric-card"><div class="ml">20-Day Range</div><div class="mv" style="font-size:14px">${range20?range20.lo+' – '+range20.hi:'—'}</div></div>
+  <div class="metric-card"><div class="ml">Z-Score (60D Rolling)</div><div class="mv" style="color:${zColor(zPrice)}">${fmtZ(zPrice)}</div><div class="mt">${zLabel(zPrice)}</div></div>
+  <div class="metric-card"><div class="ml">Macro Bias</div><div class="mv" style="font-size:14px;color:${bias.cls==='b-bull'?'var(--green)':bias.cls==='b-bear'?'var(--red)':'var(--amber)'}">${bias.label}</div><div class="mt">Z-score signal</div></div>
+</div>
+<div class="g2 mb">
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--green)"></span>Mean Reversion Levels (20-Day)<span class="badge b-live">LIVE</span></div>
+    ${renderMR(p,dp)}
+  </div>
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--accent)"></span>Z-Score Breakdown<span class="badge b-info">YOUR ENGINE</span></div>
+    ${renderZRow('Price · rolling_zscore(60)',zPrice)}
+    ${renderZRow('Price · ewma_zscore(30)',zEwma)}
+    ${renderZRow('Yield spread · spread_zscore(60)',zSpread)}
+    ${renderZRow('DXY · rolling_zscore(60)',zDXY)}
+    <div style="margin-top:10px;padding:8px 10px;background:var(--bg3);border-radius:var(--rs);font-size:10px;color:var(--text3)">
+      <strong style="color:var(--text2)">Methods:</strong> rolling_zscore + spread_zscore + ewma_zscore — all recalculate on every daily data load.
+    </div>
+  </div>
+</div>
+<div class="g3 mb">
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--amber)"></span>${cfg.yALbl} Yields<span class="badge b-daily">${cfg.yASrc}</span></div>
+    ${renderYieldRow(cfg.yALbl,yA,cfg.yASrc,'ft-daily')}
+    ${yA2?renderYieldRow(cfg.yA2?.replace('10y','2Y').replace('de2y','DE 2Y').replace('us2y','US 2Y'),yA2,cfg.yASrc,'ft-daily'):''}
+    ${spread10!=null?`<div class="spread-row ss"><span class="sn">vs ${cfg.yBLbl} spread</span><span class="sv hl">${bp(spread10)}</span></div>`:''}
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--text3);margin-bottom:5px">CURVE SHAPE</div>
+      ${renderCurveShape(yAShape||usShape)}
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--blue)"></span>${cfg.yBLbl} Yields<span class="badge b-daily">${cfg.yBSrc}</span></div>
+    ${renderYieldRow(cfg.yBLbl,yB,cfg.yBSrc,cfg.yBSrc.includes('FRED')?'ft-1d':'ft-daily')}
+    ${yB2?renderYieldRow('US 2Y',yB2,'FRED GS2','ft-1d'):''}
+    ${key==='audjpy'?`
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--text3);margin-bottom:6px">CARRY ANALYSIS</div>
+      <div class="carry-bar"><div class="carry-fill" style="width:${Math.min(92,Math.max(8,65+(S.audjpy?.pct||0)*10))}%;background:${(S.audjpy?.pct||0)>0?'var(--green)':'var(--red)'}"></div></div>
+      <div style="font-size:11px;font-weight:700;color:${(S.audjpy?.pct||0)>0.5?'var(--green)':(S.audjpy?.pct||0)<-0.5?'var(--red)':'var(--amber)'};margin:6px 0">${(S.audjpy?.pct||0)>0.5?'CARRY POSITIVE':(S.audjpy?.pct||0)<-0.5?'CARRY NEGATIVE':'CARRY NEUTRAL'}</div>
+      <div style="font-size:11px;color:var(--text2)">RBA 4.35% vs BoJ 0.10% = +4.25% differential. Both yield feeds now daily (RBA + MoF).</div>
+    </div>`:''}
+  </div>
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--red)"></span>Macro Signals</div>
+    ${sigs.map(s=>`<div class="sig-row"><div class="sig-dot" style="background:${s.c}"></div><div class="sig-name">${s.n}</div><div class="sig-val" style="color:${s.c}">${s.v}</div><div class="sig-sub">${s.s}</div></div>`).join('')}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CB POLICY PAGE
+// ═══════════════════════════════════════════════════════════════
+const CB=[
+  {n:'FED',f:'🇺🇸',full:'Federal Reserve',       rate:'5.25–5.50',rN:5.375,sc:'s-hawk',hawk:68,next:'Jun 12, 2024',last:'Jul 2023 (+25bp)',txt:'Holding at 22-year highs. Core PCE sticky at 2.8%. 2 cuts priced late 2024. Powell data-dependent. Watch NFP + CPI monthly.'},
+  {n:'ECB',f:'🇪🇺',full:'European Central Bank', rate:'4.00',     rN:4.00, sc:'s-neut',hawk:45,next:'Jul 18, 2024',last:'Jun 2024 (−25bp)',txt:'Cut 25bp Jun 2024 — first since 2019. Gradual easing. EUR faces headwinds vs Fed divergence.'},
+  {n:'BoE',f:'🇬🇧',full:'Bank of England',        rate:'5.25',    rN:5.25, sc:'s-hold',hawk:40,next:'Jun 20, 2024',last:'Aug 2023 (+25bp)',txt:'UK CPI hit 2.3% target. MPC 7-2 hold. Services inflation 5.9% sticky. First cut Aug/Sep 2024 expected.'},
+  {n:'RBA',f:'🇦🇺',full:'Reserve Bank Australia',rate:'4.35',    rN:4.35, sc:'s-neut',hawk:50,next:'Jun 18, 2024',last:'Nov 2023 (+25bp)',txt:'On hold. Inflation 3.6% — above target. No cuts until 2025. Mild hike risk remains if CPI re-accelerates.'},
+  {n:'BoJ',f:'🇯🇵',full:'Bank of Japan',          rate:'0.0–0.1',rN:0.05, sc:'s-dove',hawk:20,next:'Jun 14, 2024',last:'Mar 2024 (+10bp)',txt:'Ended negative rates Mar 2024 but ultra-accommodative. YCC abandoned. Wage growth key for next hike. Massive US–JP spread keeps JPY under severe pressure.'},
+  {n:'BoC',f:'🇨🇦',full:'Bank of Canada',         rate:'4.75',    rN:4.75, sc:'s-dove',hawk:30,next:'Jul 24, 2024',last:'Jun 2024 (−25bp)',txt:'Cut 25bp Jun 2024 — first G7 to cut. Further 2024 cuts expected. CAD headwind vs USD from divergence.'},
+];
+function renderCBPolicy(){
+  const banks=CB.map(b=>b.n);
+  let mat=`<div style="overflow-x:auto"><table class="rmat"><tr><th></th>${banks.map(b=>`<th>${b}</th>`).join('')}</tr>`;
+  CB.forEach(r=>{
+    mat+=`<tr><td style="font-weight:700;color:var(--text2)">${r.n}</td>`;
+    CB.forEach(c=>{ if(r.n===c.n){ mat+=`<td class="rzero">—</td>`; }else{ const d=r.rN-c.rN; mat+=`<td class="${d>0?'rpos':'rneg'}">${d>=0?'+':''}${d.toFixed(2)}%</td>`; } });
+    mat+=`</tr>`;
+  });
+  mat+=`</table></div>`;
+
+  document.getElementById('tab-cbpolicy').innerHTML=`
+<div class="g3 mb">
+${CB.map(b=>`<div class="cb-card">
+  <div class="cb-top"><div><div style="font-size:18px;margin-bottom:2px">${b.f}</div><div class="cb-name">${b.n} — ${b.full}</div></div>
+  <div style="text-align:right"><div class="cb-rate">${b.rate}%</div><span class="stance ${b.sc}">${{s_hawk:'HAWKISH',s_neut:'NEUTRAL',s_hold:'HOLD',s_dove:'DOVISH'}[b.sc]}</span></div></div>
+  <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:7px;color:var(--text3);margin-bottom:2px"><span>DOVISH</span><span>HAWKISH</span></div>
+  <div class="cb-meter"><div class="cb-fill" style="width:${b.hawk}%"></div></div>
+  <div class="cb-txt">${b.txt}</div>
+  <div class="cb-meta">NEXT MTG: ${b.next} · LAST: ${b.last}</div>
+</div>`).join('')}
+</div>
+<div class="g2">
+  <div class="card"><div class="ct"><span class="ctd" style="background:var(--accent)"></span>Rate Differential Matrix</div>${mat}</div>
+  <div class="card"><div class="ct"><span class="ctd" style="background:var(--red)"></span>Policy Divergence Signals</div>
+    ${[
+      ['EUR/USD','ECB cut + Fed hold → EUR structural headwinds. Watch ECB pace vs Fed cuts.','var(--red)'],
+      ['GBP/USD','BoE cutting imminent vs Fed hold → GBP weakness into H2 2024.','var(--red)'],
+      ['AUD/USD','RBA hold vs Fed hold → neutral. China PMI + commodities key differentiator.','var(--amber)'],
+      ['USD/JPY','BoJ ultra-dovish vs Fed hold → carry intact. Watch 150–152 intervention zone.','var(--green)'],
+      ['USD/CAD','BoC first G7 to cut → 50bp below Fed. Structural CAD pressure building.','var(--amber)'],
+      ['AUD/JPY','RBA hold vs BoJ ultra-easy → +4.25% carry. Risk-on trade of 2024.','var(--green)'],
+    ].map(([p,s,c])=>`<div class="sig-row"><div class="sig-dot" style="background:${c}"></div><div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;width:68px;flex-shrink:0">${p}</div><div class="sig-name" style="font-size:11px">${s}</div></div>`).join('')}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  LOOK AHEAD PAGE
+// ═══════════════════════════════════════════════════════════════
+const CAL=[
+  {d:'Mon May 27',e:[{t:'All Day',f:'🇺🇸',n:'US Memorial Day — thin liquidity',i:'low',fo:'—',pr:'—'}]},
+  {d:'Tue May 28',e:[{t:'09:00',f:'🇩🇪',n:'Germany IFO Business Climate',i:'med',fo:'89.9',pr:'89.4'},{t:'14:00',f:'🇺🇸',n:'US CB Consumer Confidence',i:'high',fo:'96.0',pr:'97.0'}]},
+  {d:'Wed May 29',e:[{t:'13:30',f:'🇺🇸',n:'US Prelim GDP Q1 QoQ',i:'high',fo:'1.3%',pr:'1.3%'},{t:'19:00',f:'🇺🇸',n:'FOMC Meeting Minutes',i:'high',fo:'—',pr:'—'}]},
+  {d:'Thu May 30',e:[{t:'02:30',f:'🇦🇺',n:'Australia Retail Sales MoM',i:'med',fo:'0.2%',pr:'0.4%'},{t:'08:55',f:'🇩🇪',n:'Germany Unemployment Change',i:'med',fo:'8K',pr:'10K'},{t:'13:30',f:'🇨🇦',n:'Canada GDP MoM',i:'high',fo:'0.3%',pr:'0.2%'},{t:'13:30',f:'🇺🇸',n:'US Core PCE YoY ⭐',i:'high',fo:'2.7%',pr:'2.8%'},{t:'13:30',f:'🇺🇸',n:'US Initial Jobless Claims',i:'med',fo:'218K',pr:'215K'}]},
+  {d:'Fri May 31',e:[{t:'02:00',f:'🇨🇳',n:'China Caixin Mfg PMI',i:'med',fo:'51.5',pr:'51.4'},{t:'09:00',f:'🇪🇺',n:'Eurozone CPI Flash YoY',i:'high',fo:'2.5%',pr:'2.4%'},{t:'13:30',f:'🇨🇦',n:'Canada Employment Change',i:'high',fo:'20.0K',pr:'90.4K'},{t:'15:00',f:'🇺🇸',n:'US ISM Manufacturing PMI',i:'high',fo:'49.6',pr:'49.2'}]},
+];
+function renderLookAhead(){
+  const checks=[
+    {i:'🔍',t:'Check overnight Asia session moves and range completion'},
+    {i:'📰',t:'Scan for overnight CB speeches or macro headlines'},
+    {i:'📊',t:"Identify today's release times — check calendar"},
+    {i:'🎯',t:'Mark S/R levels for each pair you plan to trade'},
+    {i:'📐',t:'Review Z-scores — flag any pair beyond ±2σ'},
+    {i:'💱',t:'Check yield spread changes vs yesterday'},
+    {i:'⚠️',t:'Check VIX + DXY — confirm risk environment'},
+    {i:'🏦',t:'Any Fed/CB speaker scheduled today?'},
+    {i:'📅',t:'Set alerts 15 min before high-impact releases'},
+    {i:'💡',t:'Write directional bias per pair before open'},
+    {i:'💤',t:'No entries 15 min before/after high impact'},
+    {i:'📓',t:'Review open trades — still aligned with macro bias?'},
+  ];
+  const biasGuide=[
+    {ev:'FOMC Minutes (Wed)',pairs:'All USD',b:'Hawkish → USD bid. Dovish surprise → USD sell. Rate path language is key.',c:'var(--red)'},
+    {ev:'US Core PCE (Thu)',pairs:'EUR/USD, USD/JPY',b:'Hot >2.8% → pushes back cuts → USD strength. Cool <2.7% → USD weakness.',c:'var(--amber)'},
+    {ev:'EZ CPI Flash (Fri)',pairs:'EUR/USD',b:'Hot >2.5% → fewer ECB cuts → EUR bid. Soft <2.3% → EUR sell.',c:'var(--blue)'},
+    {ev:'Canada GDP + Jobs',pairs:'USD/CAD',b:'Strong → BoC cuts slower → CAD strength. Weak → USD/CAD higher.',c:'var(--teal)'},
+    {ev:'AU Retail Sales (Thu)',pairs:'AUD/USD, AUD/JPY',b:'Strong >0.4% → RBA holds → AUD bid. Weak → AUD/JPY lower.',c:'var(--green)'},
+    {ev:'China Caixin PMI (Fri)',pairs:'AUD/USD, AUD/JPY',b:'Above 51 → China demand → AUD/JPY rally. Contracting → risk-off.',c:'var(--amber)'},
+  ];
+  document.getElementById('tab-lookahead').innerHTML=`
+<div class="card mb">
+  <div class="ct"><span class="ctd" style="background:var(--accent)"></span>Pre-Market Planning Checklist</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+    ${checks.map(c=>`<div class="chk-item" onclick="this.classList.toggle('done');this.querySelector('.chk-box').textContent=this.classList.contains('done')?'✓':'○'">
+      <div class="chk-icon">${c.i}</div><div class="chk-txt">${c.t}</div><div class="chk-box">○</div>
+    </div>`).join('')}
+  </div>
+</div>
+<div class="g2">
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--amber)"></span>7-Day Economic Calendar</div>
+    ${CAL.map(d=>`<div class="ev-day-hdr">${d.d}</div>${d.e.map(e=>`<div class="ev-row"><div class="ev-time">${e.t}</div><div class="ev-flag">${e.f}</div><div class="ev-name">${e.n}</div><div class="ev-impact i-${e.i}">${e.i.toUpperCase()}</div><div class="ev-fv">F: ${e.fo}<br>P: ${e.pr}</div></div>`).join('')}`).join('')}
+  </div>
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--pink)"></span>Event → Pair Bias Guide</div>
+    ${biasGuide.map(b=>`<div style="padding:8px 11px;margin-bottom:7px;background:var(--bg3);border-radius:var(--rs);border-left:3px solid ${b.c}">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px"><div style="font-size:11px;font-weight:700">${b.ev}</div><div style="font-family:'DM Mono',monospace;font-size:8px;color:${b.c};font-weight:700">${b.pairs}</div></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.5">${b.b}</div>
+    </div>`).join('')}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Z-SCORES PAGE
+// ═══════════════════════════════════════════════════════════════
+function renderZScoresPage(){
+  const zUS2s10s=ZS.latestSpread(S.us10y?.closes,S.us2y?.closes);
+  const zUSDE   =ZS.latestSpread(S.us10y?.closes,S.de10y?.closes);
+  const zUSUK   =ZS.latestSpread(S.us10y?.closes,S.uk10y?.closes);
+  const zUSJP   =ZS.latestSpread(S.us10y?.closes,S.jp10y?.closes);
+  const zUSAU   =ZS.latestSpread(S.us10y?.closes,S.au10y?.closes);
+  const zUSCA   =ZS.latestSpread(S.us10y?.closes,S.ca10y?.closes);
+
+  document.getElementById('tab-zscores').innerHTML=`
+<div class="card mb">
+  <div class="ct"><span class="ctd" style="background:var(--accent)"></span>Z-Score Engine — Data Freshness Status</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">
+    ${[
+      ['FX Prices','Frankfurter','DAILY','var(--green)',S.eurusd],
+      ['US Yields','FRED GS10/GS2','1-DAY LAG','var(--amber)',S.us10y],
+      ['EUR/DE Yields','ECB SDW','DAILY','var(--green)',S.de10y],
+      ['UK Yields','BoE Statistics API','DAILY','var(--green)',S.uk10y],
+      ['Japan JGBs','MoF Japan CSV','DAILY','var(--green)',S.jp10y],
+      ['Canada Bonds','BoC Valet API','DAILY','var(--green)',S.ca10y],
+      ['Australia Bonds',FRESHNESS.rba||'RBA/Yahoo',S.au10y?'DAILY':'MONTHLY',S.au10y?'var(--green)':'var(--red)',S.au10y],
+      ['DXY / VIX','Yahoo Finance','DAILY','var(--green)',S.dxy],
+    ].map(([lbl,src,freq,col,ok])=>`<div style="padding:9px 11px;background:var(--bg3);border-radius:var(--rs);border-left:3px solid ${ok?col:'var(--red)'}">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:${ok?col:'var(--red)'};margin-bottom:2px">${freq}</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:1px">${lbl}</div>
+      <div style="font-size:10px;color:var(--text3)">${src}</div>
+    </div>`).join('')}
+  </div>
+  <div style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7;padding-top:10px;border-top:1px solid var(--border)">
+    Z-scores recalculate on every page load using your three methods:
+    <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--accent)">rolling_zscore(window=60)</code>
+    <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--accent)">spread_zscore(beta=1.0, window=60)</code>
+    <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--accent)">ewma_zscore(span=30)</code>
+  </div>
+</div>
+<div class="g3 mb">
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--accent)"></span>FX Price Z-Scores · 60D Rolling</div>
+    ${['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy'].map(k=>renderZRow(['EUR/USD','GBP/USD','AUD/USD','USD/JPY','USD/CAD','AUD/JPY'][['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy'].indexOf(k)],ZS.latest(S[k]?.closes))).join('')}
+  </div>
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--amber)"></span>Yield Spread Z-Scores · spread_zscore</div>
+    ${renderZRow('US 2s10s',zUS2s10s)}
+    ${renderZRow('US–DE 10Y',zUSDE)}
+    ${renderZRow('US–UK 10Y',zUSUK)}
+    ${renderZRow('US–JP 10Y',zUSJP)}
+    ${renderZRow('US–AU 10Y',zUSAU)}
+    ${renderZRow('US–CA 10Y',zUSCA)}
+    ${renderZRow('US 10Y yield',ZS.latest(S.us10y?.closes))}
+    ${renderZRow('US 2Y yield', ZS.latest(S.us2y?.closes))}
+  </div>
+  <div class="card">
+    <div class="ct"><span class="ctd" style="background:var(--green)"></span>Macro Driver Z-Scores · 60D Rolling</div>
+    ${renderZRow('DXY Index',ZS.latest(S.dxy?.closes))}
+    ${renderZRow('VIX',ZS.latest(S.vix?.closes))}
+    ${renderZRow('Gold (XAU)',ZS.latest(S.gold?.closes))}
+    ${renderZRow('S&P 500',ZS.latest(S.spx?.closes))}
+    ${renderZRow('HYG (credit)',ZS.latest(S.hyg?.closes))}
+    ${renderZRow('DE 10Y yield',ZS.latest(S.de10y?.closes))}
+    ${renderZRow('JP 10Y yield',ZS.latest(S.jp10y?.closes))}
+  </div>
+</div>
+<div class="card">
+  <div class="ct"><span class="ctd" style="background:var(--pink)"></span>Z-Score Interpretation Guide</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px">
+    ${[
+      ['>+2.0','Significantly overbought','Mean reversion short — fade the move','var(--red)'],
+      ['+1.0 to +2.0','Elevated / stretched long','Caution adding longs; watch for reversal signal','var(--amber)'],
+      ['−1.0 to +1.0','Normal range','Trend continuation valid; no extreme signal','var(--green)'],
+      ['−2.0 to −1.0','Depressed / stretched short','Caution adding shorts; watch for reversal signal','var(--amber)'],
+      ['<−2.0','Significantly oversold','Mean reversion long — bounce setup','var(--teal)'],
+    ].map(([r,l,a,c])=>`<div style="padding:9px 11px;background:var(--bg3);border-radius:var(--rs);border-left:3px solid ${c}">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:${c};margin-bottom:3px">${r}</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:2px">${l}</div>
+      <div style="font-size:11px;color:var(--text3)">${a}</div>
+    </div>`).join('')}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MASTER LOAD — all fetches in parallel, then render
+// ═══════════════════════════════════════════════════════════════
+async function loadAll(){
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+
+  // Fire all sources in parallel — no sequential blocking
+  const [
+    eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
+    dxy, vix, spx, hyg, gold,
+    us10y, us2y, us5y, us30y,
+    de10y, de2y,
+    uk10y,
+    jp10y_2, jp10y_10,
+    ca10y, ca2y,
+    au10y,
+  ] = await Promise.all([
+    // FX — Frankfurter (daily, free)
+    fetchFX('EUR','USD',90), fetchFX('GBP','USD',90), fetchFX('AUD','USD',90),
+    fetchFX('USD','JPY',90), fetchFX('USD','CAD',90), fetchFX('AUD','JPY',90),
+    // Cross-asset — Yahoo Finance (daily, free)
+    fetchYahoo('DX-Y.NYB'), fetchYahoo('^VIX'), fetchYahoo('^GSPC'),
+    fetchYahoo('HYG'), fetchYahoo('GC=F'),
+    // US Yields — FRED (daily, 1-day lag, your existing key)
+    fetchFRED('GS10',90), fetchFRED('GS2',90), fetchFRED('GS5',90), fetchFRED('GS30',90),
+    // EUR/DE Yields — ECB SDW (daily)
+    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'),
+    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'),
+    // UK Gilts — BoE Statistics API (daily) — IUDMNPY = 10Y nominal par yield
+    fetchBoE('IUDMNPY'),
+    // Japan JGBs — Ministry of Finance Japan CSV (daily)
+    // Col 2 = 2Y, Col 10 = 10Y in MoF CSV
+    fetchMoF(2), fetchMoF(10),
+    // Canada — Bank of Canada Valet API (daily)
+    // V39055 = 10Y GoC bond, V39051 = 2Y GoC bond
+    fetchBoC('V39055'), fetchBoC('V39051'),
+    // Australia — RBA (daily attempt) with FRED monthly fallback
+    fetchRBA(),
+  ]);
+
+  // Assemble state
+  S={ eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
+      dxy, vix, spx, hyg, gold,
+      us10y, us2y, us5y, us30y,
+      de10y, de2y,
+      uk10y,
+      jp2y: jp10y_2, jp10y: jp10y_10,
+      ca2y, ca10y,
+      au10y };
+
+  document.getElementById('ts').textContent=new Date().toLocaleString('en-GB',
+    {weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  btn.classList.remove('spinning');
+
+  updateTicker();
+  updateFreshnessBar();
+  renderOverview();
+  ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy'].forEach(renderPairPage);
+  renderCBPolicy();
+  renderLookAhead();
+  renderZScoresPage();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FORCE REFRESH — clears cache then reloads
+// ═══════════════════════════════════════════════════════════════
+function forceRefresh(){
+  CACHE.clear();
+  loadAll();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function showTab(name,btn){
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name)?.classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+function showTabById(name){
+  const labels={eurusd:'EUR/USD',gbpusd:'GBP/USD',audusd:'AUD/USD',usdjpy:'USD/JPY',usdcad:'USD/CAD',audjpy:'AUD/JPY'};
+  document.querySelectorAll('.nav-btn').forEach(b=>{ if(b.textContent.trim()===labels[name]) showTab(name,b); });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLOCK + SESSIONS
+// ═══════════════════════════════════════════════════════════════
+function tick(){
+  const now=new Date();
+  const h=now.getUTCHours(), m=now.getUTCMinutes(), s=now.getUTCSeconds();
+  document.getElementById('clock').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} UTC`;
+  document.getElementById('sp-tokyo').classList.toggle('on',h>=0&&h<9);
+  document.getElementById('sp-london').classList.toggle('on',h>=8&&h<17);
+  document.getElementById('sp-ny').classList.toggle('on',h>=13&&h<22);
+}
+setInterval(tick,1000); tick();
+
+// ═══════════════════════════════════════════════════════════════
+//  AUTO-REFRESH — daily at 00:05 UTC + every 4h as safety net
+// ═══════════════════════════════════════════════════════════════
+function scheduleAutoRefresh(){
+  const now=new Date();
+  const next=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+1,0,5,0));
+  const msUntil=next-now;
+  setTimeout(()=>{ CACHE.clear(); loadAll(); scheduleAutoRefresh(); }, msUntil);
+}
+scheduleAutoRefresh();
+setInterval(()=>{ CACHE.clear(); loadAll(); }, 4*3600*1000);
+
+// Boot
+renderLookAhead();
+renderCBPolicy();
 loadAll();
 </script>
 </body>
