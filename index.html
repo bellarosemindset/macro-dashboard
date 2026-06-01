@@ -232,6 +232,32 @@ body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; mi
 
 @media(max-width:960px){ .g3,.g4{ grid-template-columns:1fr 1fr; } }
 @media(max-width:640px){ .g2,.g3,.g4{ grid-template-columns:1fr; } .s2{ grid-column:span 1; } .page-wrap{ padding:12px 12px 40px; } }
+
+/* ─── MORNING BRIEFING ─────────────────────────────────────── */
+.morning-briefing{ background:var(--bg2); border:1px solid var(--border2); border-radius:var(--r); padding:18px 20px; }
+.briefing-hdr{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.briefing-title{ font-size:15px; font-weight:700; }
+.briefing-ts{ font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); }
+.briefing-regime-badge{ display:inline-flex; align-items:center; gap:7px; padding:6px 16px; border-radius:20px; border:1px solid; font-size:13px; font-weight:700; letter-spacing:.06em; }
+.briefing-kv-chip{ background:var(--bg3); border-radius:var(--rs); padding:5px 11px; }
+.briefing-kk{ font-size:8px; font-weight:700; letter-spacing:.1em; color:var(--text3); }
+.briefing-kv-v{ font-family:'DM Mono',monospace; font-size:13px; font-weight:500; }
+.briefing-summary{ font-size:12px; color:var(--text); line-height:1.7; padding:11px 14px; background:var(--bg3); border-radius:var(--rs); border-left:3px solid var(--accent); margin-bottom:11px; }
+.briefing-curve-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:7px 12px; background:var(--bg3); border-radius:var(--rs); }
+.briefing-curve-lbl{ font-size:8px; font-weight:700; letter-spacing:.1em; color:var(--text3); }
+.briefing-curve-src{ font-size:9px; color:var(--text3); font-family:'DM Mono',monospace; margin-left:auto; }
+/* ─── LIVE PAIR BIAS ───────────────────────────────────────── */
+.bias-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:12px; }
+.bias-card{ background:var(--bg2); border:1px solid var(--border); border-left-width:3px; border-radius:var(--r); padding:14px 15px; }
+.bias-card-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:9px; }
+.bias-sym{ font-family:'DM Mono',monospace; font-size:15px; font-weight:700; }
+.bias-factors{ margin-bottom:9px; }
+.bias-factor{ display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid var(--border); font-size:10px; gap:8px; }
+.bias-factor:last-child{ border-bottom:none; }
+.bias-fl{ color:var(--text2); flex:1; }
+.bias-fv{ font-family:'DM Mono',monospace; font-weight:600; flex-shrink:0; }
+.bias-narr{ font-size:11px; color:var(--text2); line-height:1.65; padding-top:8px; border-top:1px solid var(--border); }
+@media(max-width:640px){ .bias-grid{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -810,7 +836,9 @@ function renderYieldRow(label,yData,source,freshTag){
 //  OVERVIEW PAGE
 // ═══════════════════════════════════════════════════════════════
 function renderOverview(){
-  const usCurve=S.us10y&&S.us2y?(S.us10y.price-S.us2y.price)*100:null;
+  // Prefer FRED T10Y2Y (direct series) — already in percent, not basis points
+  const usCurveRaw=S.t10y2y?S.t10y2y.price:(S.us10y&&S.us2y?(S.us10y.price-S.us2y.price):null);
+  const usCurve=usCurveRaw!=null?usCurveRaw*100:null; // convert to basis points for bp() helper
   const sp_usde=S.us10y&&S.de10y?(S.us10y.price-S.de10y.price)*100:null;
   const sp_usuk=S.us10y&&S.uk10y?(S.us10y.price-S.uk10y.price)*100:null;
   const sp_usjp=S.us10y&&S.jp10y?(S.us10y.price-S.jp10y.price)*100:null;
@@ -851,6 +879,7 @@ function renderOverview(){
   const missing=[!S.eurusd&&'EUR/USD',!S.dxy&&'DXY',!S.vix&&'VIX',!S.us10y&&'US Yields'].filter(Boolean);
 
   document.getElementById('tab-overview').innerHTML=`
+<div id="morning-briefing-area"></div>
 ${missing.length?`<div class="data-note">⚠️ Still loading: <strong>${missing.join(', ')}</strong> — try refreshing.</div>`:''}
 <div class="g2 mb">
   <div class="card">
@@ -1009,6 +1038,218 @@ function renderPairPage(key){
 
 
 // ═══════════════════════════════════════════════════════════════
+//  MORNING BRIEFING + LIVE PAIR BIAS  (Tasks 1 & 2)
+// ═══════════════════════════════════════════════════════════════
+function _dxyUp(){ return S.dxy?.pct!=null&&S.dxy.pct>0.05; }
+function _dxyDown(){ return S.dxy?.pct!=null&&S.dxy.pct<-0.05; }
+function _riskOn(){ return S.vix?.price!=null&&S.vix.price<18&&S.spx?.pct!=null&&S.spx.pct>0; }
+function _riskOff(){ return S.vix?.price!=null&&S.vix.price>20; }
+
+function _curveVal(){
+  if(S.t10y2y) return S.t10y2y.price; // FRED T10Y2Y direct (in % — e.g. +0.25)
+  if(S.us10y&&S.us2y) return S.us10y.price-S.us2y.price;
+  return null;
+}
+
+function detectMorningRegime(){
+  const vix=S.vix?.price;
+  const spxUp=S.spx?.pct!=null&&S.spx.pct>0.3;
+  const cv=_curveVal();
+  const vixCross=vix!=null&&vix>=19&&vix<=22;
+  const curveFlat=cv!=null&&Math.abs(cv)<0.05;
+
+  if(vixCross||curveFlat){
+    return{r:'TRANSITIONAL',icon:'🔵',col:'var(--blue)',border:'rgba(91,156,246,.3)',bg:'var(--bdim)',
+      note:`Regime is shifting. VIX at ${vix!=null?vix.toFixed(1):'—'} (crossover zone) and yield curve at ${cv!=null?cv.toFixed(2)+'%':'—'} near inflection. Monitor for a directional break before positioning.`,
+      kv:{VIX:vix?.toFixed(1)||'—','2s10s':cv!=null?cv.toFixed(2)+'%':'—',DXY:S.dxy?.price?.toFixed(2)||'—','S&P':S.spx?.price?.toFixed(0)||'—'}};
+  }
+  if(vix!=null&&vix>20&&cv!=null&&cv<0&&_dxyUp()){
+    return{r:'RISK OFF',icon:'🔴',col:'var(--red)',border:'rgba(255,107,107,.3)',bg:'var(--rdim)',
+      note:`Risk appetite suppressed. VIX elevated at ${vix.toFixed(1)}, yield curve inverted at ${cv.toFixed(2)}%, and DXY rising (${S.dxy?.pct!=null?(S.dxy.pct>0?'+':'')+S.dxy.pct.toFixed(2)+'%':'—'}). Favour USD and JPY defensive positioning.`,
+      kv:{VIX:vix.toFixed(1),'2s10s':cv.toFixed(2)+'%','DXY Δ':S.dxy?.pct!=null?(S.dxy.pct>0?'+':'')+S.dxy.pct.toFixed(2)+'%':'—','S&P':S.spx?.price?.toFixed(0)||'—'}};
+  }
+  if(vix!=null&&vix<16&&spxUp&&_dxyDown()){
+    return{r:'RISK ON',icon:'🟢',col:'var(--green)',border:'rgba(0,214,143,.3)',bg:'var(--gdim)',
+      note:`Risk appetite healthy. VIX low at ${vix.toFixed(1)}, equities rising${S.spx?.pct!=null?' (S&P '+(S.spx.pct>0?'+':'')+S.spx.pct.toFixed(2)+'%)':''}, and DXY softening. Favour risk currencies, AUD/JPY carry, and higher-yielders.`,
+      kv:{VIX:vix.toFixed(1),'S&P Δ':S.spx?.pct!=null?(S.spx.pct>0?'+':'')+S.spx.pct.toFixed(2)+'%':'—','DXY Δ':S.dxy?.pct!=null?(S.dxy.pct>0?'+':'')+S.dxy.pct.toFixed(2)+'%':'—','2s10s':cv!=null?cv.toFixed(2)+'%':'—'}};
+  }
+  return{r:'NEUTRAL',icon:'🟡',col:'var(--amber)',border:'rgba(255,179,71,.3)',bg:'var(--adim)',
+    note:`Mixed signals — no dominant macro theme. VIX at ${vix!=null?vix.toFixed(1):'—'}, S&P ${S.spx?.pct!=null?(S.spx.pct>0?'+':'')+S.spx.pct.toFixed(2)+'%':'flat'}, yield curve at ${cv!=null?cv.toFixed(2)+'%':'—'}. Wait for confirmation before directional positioning.`,
+    kv:{VIX:vix?.toFixed(1)||'—','2s10s':cv!=null?cv.toFixed(2)+'%':'—',DXY:S.dxy?.price?.toFixed(2)||'—','S&P Δ':S.spx?.pct!=null?(S.spx.pct>0?'+':'')+S.spx.pct.toFixed(2)+'%':'—'}};
+}
+
+function generateMarketSummary(regime){
+  const vix=S.vix?.price, dxy=S.dxy?.price, dxyPct=S.dxy?.pct, spxPct=S.spx?.pct;
+  const cv=_curveVal();
+  if(regime.r==='RISK OFF'){
+    return `Risk appetite is cautious this morning. The yield curve ${cv!=null?`remains inverted at ${cv.toFixed(2)}%`:'is compressed'}, VIX is elevated at ${vix!=null?vix.toFixed(1):'—'}, and DXY is ${_dxyUp()?'strengthening':'firm'} at ${dxy!=null?dxy.toFixed(2):'—'}. Favour USD longs, JPY, and defensive positioning across risk-sensitive pairs.`;
+  }
+  if(regime.r==='RISK ON'){
+    return `Risk appetite is constructive this morning. VIX is subdued at ${vix!=null?vix.toFixed(1):'—'}, equities are ${spxPct!=null&&spxPct>0?`rallying (S&P ${spxPct>0?'+':''}${spxPct.toFixed(2)}%)`:'positive'}, and DXY is softening at ${dxy!=null?dxy.toFixed(2):'—'}. Favour AUD, NZD, and higher-yielding currencies. AUD/JPY is the primary carry expression today.`;
+  }
+  if(regime.r==='TRANSITIONAL'){
+    return `Market conditions are transitioning — handle with care. VIX is hovering near the 20 threshold at ${vix!=null?vix.toFixed(1):'—'} and the yield curve is near inflection at ${cv!=null?cv.toFixed(2)+'%':'—'}. Reduce size and wait for a directional break before committing to new positions.`;
+  }
+  return `Mixed macro backdrop with no dominant theme. VIX at ${vix!=null?vix.toFixed(1):'—'}, DXY at ${dxy!=null?dxy.toFixed(2):'—'}, yield curve at ${cv!=null?cv.toFixed(2)+'%':'—'}. Monitor key data releases and central bank commentary for directional cues.`;
+}
+
+function scorePairBias(key){
+  const cv=_curveVal();
+  const dxyPct=S.dxy?.pct;
+  const ro=_riskOn(), rof=_riskOff();
+  const dxySc=_dxyUp()?1:_dxyDown()?-1:0;
+  const dxyNote=dxyPct!=null?(dxyPct>0?'+':'')+dxyPct.toFixed(2)+'%':'—';
+  const curveSc=cv==null?0:cv>0.1?1:cv<-0.1?-1:0;
+  const curveNote=cv!=null?cv.toFixed(2)+'%':'—';
+  const rEnvNote=rof?'Risk off':ro?'Risk on':'Neutral';
+  let score=0, factors=[];
+  const addF=(l,v,note)=>{ score+=v; factors.push({l,v,note}); };
+
+  if(key==='eurusd'){
+    const rd=S.de2y&&S.us2y?S.de2y.price-S.us2y.price:null;
+    if(rd!=null) addF('Rate diff DE−US 2Y', rd>0?1:rd<-0.15?-1:0, rd.toFixed(2)+'%');
+    addF('DXY direction', -dxySc, dxyNote);
+    addF('Risk environment', rof?-1:0, rEnvNote);
+    const ys=S.de10y&&S.us10y?S.de10y.price-S.us10y.price:null;
+    if(ys!=null) addF('DE−US 10Y spread', ys>0?1:ys<-0.15?-1:0, ys.toFixed(2)+'%');
+  } else if(key==='gbpusd'){
+    const rd=S.uk10y&&S.us10y?S.uk10y.price-S.us10y.price:null;
+    if(rd!=null) addF('Rate diff UK−US 10Y', rd>0?1:rd<-0.15?-1:0, rd.toFixed(2)+'%');
+    addF('DXY direction', -dxySc, dxyNote);
+    addF('Risk environment', rof?-1:0, rEnvNote);
+    addF('US yield curve', curveSc, curveNote);
+  } else if(key==='audusd'){
+    const rd=S.au10y&&S.us10y?S.au10y.price-S.us10y.price:null;
+    if(rd!=null) addF('Rate diff AU−US 10Y', rd>0?1:rd<-0.15?-1:0, rd.toFixed(2)+'%');
+    addF('DXY direction', -dxySc, dxyNote);
+    addF('Risk environment', ro?1:rof?-1:0, rEnvNote);
+    addF('US yield curve', curveSc, curveNote);
+  } else if(key==='usdjpy'){
+    const rd=S.us10y&&S.jp10y?S.us10y.price-S.jp10y.price:null;
+    if(rd!=null) addF('Rate diff US−JP 10Y', rd>2?1:rd<1.5?-1:0, rd.toFixed(2)+'%');
+    addF('DXY direction', dxySc, dxyNote);
+    addF('Risk environment', ro?1:rof?-1:0, rEnvNote);
+    addF('US yield curve', curveSc, curveNote);
+  } else if(key==='usdcad'){
+    const rd=S.us10y&&S.ca10y?S.us10y.price-S.ca10y.price:null;
+    if(rd!=null) addF('Rate diff US−CA 10Y', rd>0.15?1:rd<-0.15?-1:0, rd.toFixed(2)+'%');
+    addF('DXY direction', dxySc, dxyNote);
+    addF('Risk environment', ro?-1:rof?1:0, rEnvNote);
+    addF('US yield curve', curveSc, curveNote);
+  } else if(key==='audjpy'){
+    const rd=S.au10y&&S.jp10y?S.au10y.price-S.jp10y.price:null;
+    if(rd!=null) addF('Rate diff AU−JP 10Y', rd>2?1:rd<1?-1:0, rd.toFixed(2)+'%');
+    addF('Risk environment (×2)', ro?2:rof?-2:0, rEnvNote);
+    addF('DXY direction', -dxySc, dxyNote);
+  }
+
+  const label=score>=2?'BULLISH':score<=-2?'BEARISH':'NEUTRAL';
+  const cls=score>=2?'b-bull':score<=-2?'b-bear':'b-neut';
+  return{score,label,cls,factors};
+}
+
+function generatePairNarrative(key,bias){
+  const cv=_curveVal();
+  const dxyPct=S.dxy?.pct;
+  const ro=_riskOn(), rof=_riskOff();
+  const dxyStr=_dxyUp()?`DXY firming (+${S.dxy?.pct?.toFixed(2)}%)`:_dxyDown()?`DXY softening (${S.dxy?.pct?.toFixed(2)}%)`:'DXY stable';
+
+  if(key==='eurusd'){
+    const d=S.de10y&&S.us10y?S.de10y.price-S.us10y.price:null;
+    return `The ECB-Fed yield differential${d!=null?` (DE−US 10Y: ${d.toFixed(2)}%)`:''}${_dxyUp()?' combined with DXY strength adds USD pressure':_dxyDown()?' alongside soft DXY supports EUR upside':' shapes the structural backdrop'}. ${rof?'Risk-off tone adds further USD safe-haven demand.':ro?'Risk-on conditions offer mild EUR/USD support.':'Monitor yield differentials for directional cues.'}`;
+  }
+  if(key==='gbpusd'){
+    const d=S.uk10y&&S.us10y?S.uk10y.price-S.us10y.price:null;
+    return `GBP/USD${d!=null?` — UK−US 10Y spread at ${d.toFixed(2)}%`:''}. ${dxyStr}${rof?' — risk-off adds defensive USD demand.':'.'}  ${bias.label==='BULLISH'?'Positive carry and risk appetite support GBP upside.':bias.label==='BEARISH'?'Negative carry differential and USD strength weigh on GBP/USD.':'Range trade likely until a clearer macro signal emerges.'}`;
+  }
+  if(key==='audusd'){
+    const d=S.au10y&&S.us10y?S.au10y.price-S.us10y.price:null;
+    return `${ro?'Risk-on conditions support the commodity-linked AUD.':rof?'Risk-off weighs on the risk-sensitive AUD — commodity currencies under pressure.':'Mixed risk backdrop for AUD/USD.'} ${d!=null?`AU−US 10Y spread at ${d.toFixed(2)}%.`:''} ${_dxyUp()?'Watch DXY strength as a near-term headwind.':_dxyDown()?'DXY softness provides a tailwind.':''}`;
+  }
+  if(key==='usdjpy'){
+    const d=S.us10y&&S.jp10y?S.us10y.price-S.jp10y.price:null;
+    return `US−JP carry differential${d!=null?` at ${d.toFixed(2)}%`:''}is the primary driver. ${rof?'Risk-off conditions trigger JPY safe-haven demand — watch for accelerated downside if VIX spikes further.':ro?'Risk-on reduces JPY haven demand, supporting USD/JPY carry.':'Carry remains intact in neutral conditions.'} ${dxyStr}.`;
+  }
+  if(key==='usdcad'){
+    const d=S.us10y&&S.ca10y?S.us10y.price-S.ca10y.price:null;
+    return `USD/CAD driven by BoC-Fed divergence${d!=null?` (US−CA 10Y: ${d.toFixed(2)}%)`:''}. ${ro?'Risk-on supports oil and CAD — headwind for USD/CAD.':rof?'Risk-off flows favour USD over commodity-linked CAD.':'Oil price and rate differential are key near-term catalysts.'} ${dxyStr}.`;
+  }
+  if(key==='audjpy'){
+    const d=S.au10y&&S.jp10y?S.au10y.price-S.jp10y.price:null;
+    return `AUD/JPY is the classic risk proxy. ${ro?`Carry trade attractive${d!=null?` — AU−JP differential at ${d.toFixed(2)}%`:''}; risk-on conditions support upside.`:rof?'Risk-off environment triggers carry unwind — JPY demand pressures AUD/JPY lower.':'Neutral risk backdrop; carry provides underlying support but momentum is muted.'} Watch VIX for early warning of any regime shift.`;
+  }
+  return `${bias.label} bias — score ${bias.score>=0?'+':''}${bias.score} from ${bias.factors.length} factors.`;
+}
+
+function renderMorningBriefing(){
+  const el=document.getElementById('morning-briefing-area');
+  if(!el) return;
+
+  const regime=detectMorningRegime();
+  const summary=generateMarketSummary(regime);
+  const cv=_curveVal();
+  const curveArrow=cv==null?'':cv>0.05?'↑ steepening':cv<-0.05?'↓ inverting':'→ flat';
+  const curveCol=cv==null?'var(--text3)':cv>0?'var(--green)':'var(--red)';
+  const curveSource=S.t10y2y?'FRED T10Y2Y · direct':'FRED GS10−GS2 · calc';
+
+  const biasPairs=['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy'];
+  const biasCards=biasPairs.map(key=>{
+    const cfg=PAIR_CFG[key]; if(!cfg) return '';
+    const b=scorePairBias(key);
+    const narr=generatePairNarrative(key,b);
+    const col=b.cls==='b-bull'?'var(--green)':b.cls==='b-bear'?'var(--red)':'var(--amber)';
+    const borderCol=b.cls==='b-bull'?'rgba(0,214,143,.3)':b.cls==='b-bear'?'rgba(255,107,107,.3)':'rgba(255,179,71,.3)';
+    const bgBadge=b.cls==='b-bull'?'var(--gdim)':b.cls==='b-bear'?'var(--rdim)':'var(--adim)';
+    const p=S[key];
+    return `<div class="bias-card" style="border-left-color:${col}">
+      <div class="bias-card-top">
+        <div>
+          <div class="bias-sym">${cfg.sym}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:${p&&p.pct>0?'var(--green)':p&&p.pct<0?'var(--red)':'var(--text3)'}">${p?pct(p.pct):'—'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:500">${p?p.price.toFixed(cfg.dp):'—'}</div>
+          <div style="display:inline-block;padding:2px 10px;border-radius:4px;background:${bgBadge};border:1px solid ${borderCol};font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:${col};letter-spacing:.07em;margin-top:3px">${b.label}</div>
+        </div>
+      </div>
+      <div class="bias-factors">
+        ${b.factors.map(fct=>`<div class="bias-factor"><span class="bias-fl">${fct.l}</span><span class="bias-fv" style="color:${fct.v>0?'var(--green)':fct.v<0?'var(--red)':'var(--text3)'">${fct.v>0?'+'+fct.v:fct.v} <span style="color:var(--text3);font-size:8px">(${fct.note})</span></span></div>`).join('')}
+        <div class="bias-factor" style="border-top:1px solid var(--border2);margin-top:3px;padding-top:3px">
+          <span class="bias-fl" style="font-weight:700;color:var(--text)">Total score</span>
+          <span class="bias-fv" style="color:${col};font-weight:700">${b.score>=0?'+':''}${b.score} → ${b.label}</span>
+        </div>
+      </div>
+      <div class="bias-narr">${narr}</div>
+    </div>`;
+  }).join('');
+
+  const kvHtml=Object.entries(regime.kv).map(([k,v])=>`<div class="briefing-kv-chip"><div class="briefing-kk">${k}</div><div class="briefing-kv-v">${v}</div></div>`).join('');
+
+  el.innerHTML=`
+<div class="morning-briefing mb">
+  <div class="briefing-hdr">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="briefing-title">☀️ Morning Briefing</span>
+      <span class="briefing-ts">${new Date().toLocaleString('en-GB',{weekday:'long',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} UTC</span>
+    </div>
+    <div class="briefing-regime-badge" style="background:${regime.bg};border-color:${regime.border};color:${regime.col}">${regime.icon} ${regime.r}</div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px">${kvHtml}</div>
+  <div class="briefing-summary">${summary}</div>
+  <div class="briefing-curve-row">
+    <span class="briefing-curve-lbl">YIELD CURVE 2s10s (T10Y2Y)</span>
+    <span style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:${curveCol}">${cv!=null?cv.toFixed(2)+'%':'—'}</span>
+    <span style="font-family:'DM Mono',monospace;font-size:12px;color:${curveCol}">${curveArrow}</span>
+    <span class="briefing-curve-src">${curveSource}</span>
+  </div>
+</div>
+<div class="mb">
+  <div class="ct" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:9px"><span class="ctd" style="background:var(--pink)"></span>Live Pair Bias — Multi-Factor Scoring Engine<span class="badge b-live">LIVE</span></div>
+  <div class="bias-grid">${biasCards}</div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  Z-SCORES PAGE
 // ═══════════════════════════════════════════════════════════════
 function renderZScoresPage(){
@@ -1102,7 +1343,7 @@ async function loadAll(){
     eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
     eurgbp, eurchf, audnzd, usdchf,
     dxy, vix, spx, hyg, gold,
-    us10y, us2y, us5y, us30y,
+    us10y, us2y, us5y, us30y, t10y2y,
     de10y, de2y,
     uk10y,
     jp10y_2, jp10y_10,
@@ -1117,7 +1358,7 @@ async function loadAll(){
     fetchYahoo('DX-Y.NYB'), fetchYahoo('^VIX'), fetchYahoo('^GSPC'),
     fetchYahoo('HYG'), fetchYahoo('GC=F'),
     // US Yields — FRED (daily, 1-day lag, your existing key)
-    fetchFRED('GS10',90), fetchFRED('GS2',90), fetchFRED('GS5',90), fetchFRED('GS30',90),
+    fetchFRED('GS10',90), fetchFRED('GS2',90), fetchFRED('GS5',90), fetchFRED('GS30',90), fetchFRED('T10Y2Y',90),
     // EUR/DE Yields — ECB SDW (daily)
     fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'),
     fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'),
@@ -1137,7 +1378,7 @@ async function loadAll(){
   S={ eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
       eurgbp, eurchf, audnzd, usdchf,
       dxy, vix, spx, hyg, gold,
-      us10y, us2y, us5y, us30y,
+      us10y, us2y, us5y, us30y, t10y2y,
       de10y, de2y,
       uk10y,
       jp2y: jp10y_2, jp10y: jp10y_10,
@@ -1151,6 +1392,7 @@ async function loadAll(){
   updateTicker();
   updateFreshnessBar();
   renderOverview();
+  renderMorningBriefing();
   ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy','eurgbp','eurchf','audnzd','usdchf'].forEach(renderPairPage);
   renderZScoresPage();
 }
