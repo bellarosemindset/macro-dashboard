@@ -280,8 +280,10 @@ body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; mi
   <button class="nav-btn" onclick="showTab('usdjpy',this)">USD/JPY</button>
   <button class="nav-btn" onclick="showTab('usdcad',this)">USD/CAD</button>
   <button class="nav-btn" onclick="showTab('audjpy',this)">AUD/JPY</button>
-  <button class="nav-btn" onclick="showTab('cbpolicy',this)">CB Policy</button>
-  <button class="nav-btn" onclick="showTab('lookahead',this)">Look Ahead</button>
+  <button class="nav-btn" onclick="showTab('eurgbp',this)">EUR/GBP</button>
+  <button class="nav-btn" onclick="showTab('eurchf',this)">EUR/CHF</button>
+  <button class="nav-btn" onclick="showTab('audnzd',this)">AUD/NZD</button>
+  <button class="nav-btn" onclick="showTab('usdchf',this)">USD/CHF</button>
   <button class="nav-btn" onclick="showTab('zscores',this)">Z-Scores</button>
 </div>
 
@@ -292,6 +294,10 @@ body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; mi
   <div class="tick"><span class="ts">USD/JPY</span><span class="tv" id="t-usdjpy">—</span><span class="tc" id="tc-usdjpy">—</span></div>
   <div class="tick"><span class="ts">USD/CAD</span><span class="tv" id="t-usdcad">—</span><span class="tc" id="tc-usdcad">—</span></div>
   <div class="tick"><span class="ts">AUD/JPY</span><span class="tv" id="t-audjpy">—</span><span class="tc" id="tc-audjpy">—</span></div>
+  <div class="tick"><span class="ts">EUR/GBP</span><span class="tv" id="t-eurgbp">—</span><span class="tc" id="tc-eurgbp">—</span></div>
+  <div class="tick"><span class="ts">EUR/CHF</span><span class="tv" id="t-eurchf">—</span><span class="tc" id="tc-eurchf">—</span></div>
+  <div class="tick"><span class="ts">AUD/NZD</span><span class="tv" id="t-audnzd">—</span><span class="tc" id="tc-audnzd">—</span></div>
+  <div class="tick"><span class="ts">USD/CHF</span><span class="tv" id="t-usdchf">—</span><span class="tc" id="tc-usdchf">—</span></div>
   <div class="tick"><span class="ts">DXY</span><span class="tv" id="t-dxy">—</span><span class="tc" id="tc-dxy">—</span></div>
   <div class="tick"><span class="ts">VIX</span><span class="tv" id="t-vix">—</span><span class="tc" id="tc-vix">—</span></div>
   <div class="tick"><span class="ts">S&P 500</span><span class="tv" id="t-spx">—</span><span class="tc" id="tc-spx">—</span></div>
@@ -306,8 +312,10 @@ body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; mi
   <div class="tab-page" id="tab-usdjpy"></div>
   <div class="tab-page" id="tab-usdcad"></div>
   <div class="tab-page" id="tab-audjpy"></div>
-  <div class="tab-page" id="tab-cbpolicy"></div>
-  <div class="tab-page" id="tab-lookahead"></div>
+  <div class="tab-page" id="tab-eurgbp"></div>
+  <div class="tab-page" id="tab-eurchf"></div>
+  <div class="tab-page" id="tab-audnzd"></div>
+  <div class="tab-page" id="tab-usdchf"></div>
   <div class="tab-page" id="tab-zscores"></div>
 </div>
 
@@ -740,6 +748,10 @@ function updateTicker(){
   set('usdjpy',S.usdjpy?.price?.toFixed(2), S.usdjpy);
   set('usdcad',S.usdcad?.price?.toFixed(5), S.usdcad);
   set('audjpy',S.audjpy?.price?.toFixed(3), S.audjpy);
+  set('eurgbp',S.eurgbp?.price?.toFixed(5),S.eurgbp);
+  set('eurchf',S.eurchf?.price?.toFixed(5),S.eurchf);
+  set('audnzd',S.audnzd?.price?.toFixed(5),S.audnzd);
+  set('usdchf',S.usdchf?.price?.toFixed(5),S.usdchf);
   set('dxy',   S.dxy?.price?.toFixed(2),    S.dxy);
   set('vix',   S.vix?.price?.toFixed(1),    S.vix);
   set('spx',   S.spx?.price?.toFixed(0),    S.spx);
@@ -815,6 +827,10 @@ function renderOverview(){
     {key:'usdjpy',sym:'USD/JPY',dp:2,usdBase:true, driver:'US–JP carry'},
     {key:'usdcad',sym:'USD/CAD',dp:5,usdBase:true, driver:'BoC + oil'},
     {key:'audjpy',sym:'AUD/JPY',dp:3,usdBase:false,driver:'Risk proxy'},
+    {key:'eurgbp',sym:'EUR/GBP',dp:5,usdBase:false,driver:'ECB/BoE divergence'},
+    {key:'eurchf',sym:'EUR/CHF',dp:5,usdBase:false,driver:'SNB + safe-haven'},
+    {key:'audnzd',sym:'AUD/NZD',dp:5,usdBase:false,driver:'RBA/RBNZ divergence'},
+    {key:'usdchf',sym:'USD/CHF',dp:5,usdBase:true, driver:'Risk-off + Fed/SNB'},
   ];
 
   const pairsHtml=pairs.map(({key,sym,dp,usdBase,driver})=>{
@@ -898,14 +914,22 @@ const PAIR_CFG={
   usdjpy:{sym:'USD/JPY',dp:2,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'jp10y',yB2:null,  yALbl:'US 10Y',yBLbl:'JP 10Y',yASrc:'FRED·1d',    yBSrc:'MoF·daily'},
   usdcad:{sym:'USD/CAD',dp:5,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'ca10y',yB2:null,  yALbl:'US 10Y',yBLbl:'CA 10Y',yASrc:'FRED·1d',    yBSrc:'BoC·daily'},
   audjpy:{sym:'AUD/JPY',dp:3,usdBase:false,yA:'au10y',yA2:null,    yB:'jp10y',yB2:null,  yALbl:'AU 10Y',yBLbl:'JP 10Y',yASrc:'RBA·daily',  yBSrc:'MoF·daily'},
+  eurgbp:{sym:'EUR/GBP',dp:5,usdBase:false,yA:'de10y',yA2:null,    yB:'uk10y',yB2:null,  yALbl:'DE 10Y',yBLbl:'UK 10Y',yASrc:'ECB SDW·daily',yBSrc:'BoE·daily'},
+  eurchf:{sym:'EUR/CHF',dp:5,usdBase:false,yA:'de10y',yA2:null,    yB:null,   yB2:null,  yALbl:'DE 10Y',yBLbl:'—',     yASrc:'ECB SDW·daily',yBSrc:'n/a'},
+  audnzd:{sym:'AUD/NZD',dp:5,usdBase:false,yA:'au10y',yA2:null,    yB:null,   yB2:null,  yALbl:'AU 10Y',yBLbl:'—',     yASrc:'RBA·daily',   yBSrc:'n/a'},
+  usdchf:{sym:'USD/CHF',dp:5,usdBase:true, yA:'us10y',yA2:'us2y',  yB:null,   yB2:null,  yALbl:'US 10Y',yBLbl:'—',     yASrc:'FRED·1d',     yBSrc:'n/a'},
 };
 const PAIR_SIGNALS={
-  eurusd:[{n:'US Core PCE',v:'2.8% YoY',s:'vs 2% target',c:'var(--red)'},{n:'EZ CPI',v:'2.4%',s:'Near ECB target',c:'var(--green)'},{n:'ECB',v:'Cutting',s:'Jun 2024 −25bp',c:'var(--amber)'},{n:'Fed',v:'Hold',s:'5.25–5.50%',c:'var(--red)'},{n:'EZ PMI',v:'47.4',s:'Contraction',c:'var(--red)'},{n:'US ISM Mfg',v:'49.2',s:'Slight contraction',c:'var(--amber)'}],
-  gbpusd:[{n:'UK CPI (Apr)',v:'2.3%',s:'BoE target hit',c:'var(--green)'},{n:'UK Services CPI',v:'5.9%',s:'Sticky — concern',c:'var(--red)'},{n:'UK GDP Q1',v:'+0.6%',s:'Recovery underway',c:'var(--green)'},{n:'BoE',v:'Hold→Cut',s:'Aug/Sep 2024',c:'var(--amber)'},{n:'UK Unemployment',v:'4.3%',s:'Rising slowly',c:'var(--amber)'},{n:'BoE vote',v:'7-2 Hold',s:'Close to cutting',c:'var(--amber)'}],
-  audusd:[{n:'AU CPI Q1',v:'3.6% YoY',s:'Above RBA target',c:'var(--red)'},{n:'AU Unemployment',v:'3.9%',s:'Labour mkt tight',c:'var(--green)'},{n:'RBA',v:'Hold',s:'No cuts until 2025',c:'var(--amber)'},{n:'China NBS PMI',v:'50.4',s:'Marginal expansion',c:'var(--amber)'},{n:'Iron Ore',v:'$116/t',s:'+AUD corr',c:'var(--green)'},{n:'AU Trade Balance',v:'+$5.0B',s:'Surplus supportive',c:'var(--green)'}],
-  usdjpy:[{n:'US–JP 10Y spread',v:'~370bp',s:'Extreme carry',c:'var(--red)'},{n:'BoJ',v:'Ultra-easy',s:'0.0–0.1% rate',c:'var(--red)'},{n:'JP CPI',v:'2.2% YoY',s:'Above BoJ target',c:'var(--amber)'},{n:'JP Wage growth',v:'+2.1%',s:'BoJ hike trigger',c:'var(--amber)'},{n:'Intervention',v:'150+ zone',s:'MoF warning',c:'var(--red)'},{n:'JP GDP Q1',v:'−2.0%',s:'Contraction',c:'var(--red)'}],
-  usdcad:[{n:'WTI Crude',v:'~$78/bbl',s:'CAD supportive',c:'var(--amber)'},{n:'BoC Jun 2024',v:'−25bp',s:'First G7 cut',c:'var(--green)'},{n:'CA CPI',v:'2.7% YoY',s:'Near BoC target',c:'var(--green)'},{n:'CA Employment',v:'+90.4K',s:'Strong labour mkt',c:'var(--green)'},{n:'Fed vs BoC',v:'50bp gap',s:'USD carry adv.',c:'var(--amber)'},{n:'CA GDP',v:'+0.4% MoM',s:'March data',c:'var(--green)'}],
-  audjpy:[{n:'Carry spread',v:'+4.25%',s:'RBA 4.35 − BoJ 0.1',c:'var(--green)'},{n:'Risk proxy',s:'Risk-on = AJ rally',v:'SPX corr +0.82',c:'var(--green)'},{n:'China PMI',v:'50.4',s:'AUD demand proxy',c:'var(--amber)'},{n:'VIX corr',v:'−0.78',s:'Risk-off = AJ drops',c:'var(--amber)'},{n:'Iron Ore',v:'$116/t',s:'AUD commodity link',c:'var(--green)'},{n:'BoJ hike risk',v:'Watch 160+',s:'Intervention risk',c:'var(--red)'}],
+  eurusd:[{n:'US Core PCE',v:'Live via FRED',s:'Watch vs 2% target',c:'var(--red)'},{n:'EZ CPI',v:'ECB target',s:'Disinflation path',c:'var(--green)'},{n:'ECB',v:'Easing cycle',s:'Gradual cuts underway',c:'var(--amber)'},{n:'Fed',v:'Data-dependent',s:'Watch NFP + CPI',c:'var(--red)'},{n:'EZ PMI',v:'Mfg weak',s:'Services resilient',c:'var(--amber)'},{n:'US ISM Mfg',v:'Live',s:'Key divergence driver',c:'var(--amber)'}],
+  gbpusd:[{n:'UK CPI',v:'Near target',s:'BoE watching services',c:'var(--amber)'},{n:'UK Services CPI',v:'Sticky',s:'Core inflation concern',c:'var(--red)'},{n:'UK GDP',v:'Modest growth',s:'Resilient vs EU',c:'var(--green)'},{n:'BoE',v:'Cutting cycle',s:'Gradual pace',c:'var(--amber)'},{n:'UK Unemployment',v:'Rising',s:'Labour mkt softening',c:'var(--amber)'},{n:'Fed vs BoE',v:'Rate gap',s:'Divergence driver',c:'var(--amber)'}],
+  audusd:[{n:'AU CPI',v:'Above target',s:'RBA cautious on cuts',c:'var(--red)'},{n:'AU Unemployment',v:'Low',s:'Labour mkt supportive',c:'var(--green)'},{n:'RBA',v:'Easing slowly',s:'Data-dependent',c:'var(--amber)'},{n:'China NBS PMI',v:'Live',s:'Key AUD demand proxy',c:'var(--amber)'},{n:'Iron Ore',v:'Live',s:'+AUD correlation',c:'var(--green)'},{n:'AU Trade Balance',v:'Surplus',s:'Current account support',c:'var(--green)'}],
+  usdjpy:[{n:'US–JP 10Y spread',v:'Live (FRED+MoF)',s:'Primary carry driver',c:'var(--red)'},{n:'BoJ',v:'Gradual hikes',s:'Normalisation underway',c:'var(--amber)'},{n:'JP CPI',v:'Above 2%',s:'BoJ hike trigger',c:'var(--amber)'},{n:'JP Wage growth',v:'Rising',s:'Key for BoJ path',c:'var(--amber)'},{n:'Intervention',v:'Watch levels',s:'MoF verbal guidance',c:'var(--red)'},{n:'US–JP carry',v:'Live spread',s:'Yield diff drives pair',c:'var(--red)'}],
+  usdcad:[{n:'WTI Crude',v:'Live',s:'CAD commodity link',c:'var(--amber)'},{n:'BoC',v:'Cutting',s:'Ahead of Fed',c:'var(--green)'},{n:'CA CPI',v:'Near target',s:'Supports BoC easing',c:'var(--green)'},{n:'CA Employment',v:'Live',s:'Labour market key',c:'var(--amber)'},{n:'Fed vs BoC',v:'Rate gap',s:'USD carry advantage',c:'var(--amber)'},{n:'CA GDP',v:'Live',s:'Growth trajectory',c:'var(--green)'}],
+  audjpy:[{n:'AU–JP carry',v:'Live (RBA−BoJ)',s:'Rate differential',c:'var(--green)'},{n:'Risk proxy',v:'SPX corr ~+0.8',s:'Risk-on = AJ rally',c:'var(--green)'},{n:'China PMI',v:'Live',s:'AUD demand proxy',c:'var(--amber)'},{n:'VIX corr',v:'~−0.78',s:'Risk-off = AJ drops',c:'var(--amber)'},{n:'Iron Ore',v:'Live',s:'AUD commodity link',c:'var(--green)'},{n:'BoJ hike risk',v:'Ongoing',s:'Normalisation path',c:'var(--red)'}],
+  eurgbp:[{n:'ECB vs BoE',v:'Rate diff',s:'Key divergence driver',c:'var(--amber)'},{n:'EZ CPI',v:'Live',s:'ECB easing pace',c:'var(--amber)'},{n:'UK CPI',v:'Live',s:'BoE caution on services',c:'var(--red)'},{n:'EU–UK trade',v:'Post-Brexit',s:'Structural headwinds',c:'var(--amber)'},{n:'EZ PMI',v:'Live',s:'Growth differential',c:'var(--amber)'},{n:'UK GDP',v:'Live',s:'Relative growth key',c:'var(--green)'}],
+  eurchf:[{n:'SNB',v:'Rate cuts',s:'CHF safe-haven premium',c:'var(--teal)'},{n:'EUR/CHF floor',v:'Monitor',s:'SNB intervention history',c:'var(--amber)'},{n:'ECB',v:'Easing',s:'EZ growth weakness',c:'var(--amber)'},{n:'EZ CPI',v:'Live',s:'vs SNB target',c:'var(--amber)'},{n:'Risk-off flow',v:'CHF bid',s:'Safe-haven demand',c:'var(--blue)'},{n:'DE 10Y',v:'Live (ECB SDW)',s:'EUR yield driver',c:'var(--green)'}],
+  audnzd:[{n:'RBA vs RBNZ',v:'Rate diff',s:'Key divergence driver',c:'var(--amber)'},{n:'AU CPI',v:'Live',s:'RBA easing pace',c:'var(--red)'},{n:'NZ CPI',v:'Live',s:'RBNZ path',c:'var(--amber)'},{n:'China PMI',v:'Live',s:'AUD demand proxy',c:'var(--amber)'},{n:'AU–NZ carry',v:'Rate differential',s:'Carry component',c:'var(--green)'},{n:'AU Trade',v:'Live',s:'Commodity flows',c:'var(--green)'}],
+  usdchf:[{n:'Fed vs SNB',v:'Rate diff',s:'Key divergence driver',c:'var(--amber)'},{n:'SNB',v:'Cutting',s:'CHF weakening bias',c:'var(--teal)'},{n:'US CPI',v:'Live (FRED)',s:'Fed rate path driver',c:'var(--red)'},{n:'Risk-off',v:'CHF safe-haven',s:'USD/CHF falls on stress',c:'var(--blue)'},{n:'US 10Y',v:'Live (FRED)',s:'Rate differential',c:'var(--amber)'},{n:'DXY',v:'Live',s:'USD broad strength',c:'var(--amber)'}],
 };
 
 function renderPairPage(key){
@@ -983,109 +1007,6 @@ function renderPairPage(key){
 </div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  CB POLICY PAGE
-// ═══════════════════════════════════════════════════════════════
-const CB=[
-  {n:'FED',f:'🇺🇸',full:'Federal Reserve',       rate:'5.25–5.50',rN:5.375,sc:'s-hawk',hawk:68,next:'Jun 12, 2024',last:'Jul 2023 (+25bp)',txt:'Holding at 22-year highs. Core PCE sticky at 2.8%. 2 cuts priced late 2024. Powell data-dependent. Watch NFP + CPI monthly.'},
-  {n:'ECB',f:'🇪🇺',full:'European Central Bank', rate:'4.00',     rN:4.00, sc:'s-neut',hawk:45,next:'Jul 18, 2024',last:'Jun 2024 (−25bp)',txt:'Cut 25bp Jun 2024 — first since 2019. Gradual easing. EUR faces headwinds vs Fed divergence.'},
-  {n:'BoE',f:'🇬🇧',full:'Bank of England',        rate:'5.25',    rN:5.25, sc:'s-hold',hawk:40,next:'Jun 20, 2024',last:'Aug 2023 (+25bp)',txt:'UK CPI hit 2.3% target. MPC 7-2 hold. Services inflation 5.9% sticky. First cut Aug/Sep 2024 expected.'},
-  {n:'RBA',f:'🇦🇺',full:'Reserve Bank Australia',rate:'4.35',    rN:4.35, sc:'s-neut',hawk:50,next:'Jun 18, 2024',last:'Nov 2023 (+25bp)',txt:'On hold. Inflation 3.6% — above target. No cuts until 2025. Mild hike risk remains if CPI re-accelerates.'},
-  {n:'BoJ',f:'🇯🇵',full:'Bank of Japan',          rate:'0.0–0.1',rN:0.05, sc:'s-dove',hawk:20,next:'Jun 14, 2024',last:'Mar 2024 (+10bp)',txt:'Ended negative rates Mar 2024 but ultra-accommodative. YCC abandoned. Wage growth key for next hike. Massive US–JP spread keeps JPY under severe pressure.'},
-  {n:'BoC',f:'🇨🇦',full:'Bank of Canada',         rate:'4.75',    rN:4.75, sc:'s-dove',hawk:30,next:'Jul 24, 2024',last:'Jun 2024 (−25bp)',txt:'Cut 25bp Jun 2024 — first G7 to cut. Further 2024 cuts expected. CAD headwind vs USD from divergence.'},
-];
-function renderCBPolicy(){
-  const banks=CB.map(b=>b.n);
-  let mat=`<div style="overflow-x:auto"><table class="rmat"><tr><th></th>${banks.map(b=>`<th>${b}</th>`).join('')}</tr>`;
-  CB.forEach(r=>{
-    mat+=`<tr><td style="font-weight:700;color:var(--text2)">${r.n}</td>`;
-    CB.forEach(c=>{ if(r.n===c.n){ mat+=`<td class="rzero">—</td>`; }else{ const d=r.rN-c.rN; mat+=`<td class="${d>0?'rpos':'rneg'}">${d>=0?'+':''}${d.toFixed(2)}%</td>`; } });
-    mat+=`</tr>`;
-  });
-  mat+=`</table></div>`;
-
-  document.getElementById('tab-cbpolicy').innerHTML=`
-<div class="g3 mb">
-${CB.map(b=>`<div class="cb-card">
-  <div class="cb-top"><div><div style="font-size:18px;margin-bottom:2px">${b.f}</div><div class="cb-name">${b.n} — ${b.full}</div></div>
-  <div style="text-align:right"><div class="cb-rate">${b.rate}%</div><span class="stance ${b.sc}">${{s_hawk:'HAWKISH',s_neut:'NEUTRAL',s_hold:'HOLD',s_dove:'DOVISH'}[b.sc]}</span></div></div>
-  <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:7px;color:var(--text3);margin-bottom:2px"><span>DOVISH</span><span>HAWKISH</span></div>
-  <div class="cb-meter"><div class="cb-fill" style="width:${b.hawk}%"></div></div>
-  <div class="cb-txt">${b.txt}</div>
-  <div class="cb-meta">NEXT MTG: ${b.next} · LAST: ${b.last}</div>
-</div>`).join('')}
-</div>
-<div class="g2">
-  <div class="card"><div class="ct"><span class="ctd" style="background:var(--accent)"></span>Rate Differential Matrix</div>${mat}</div>
-  <div class="card"><div class="ct"><span class="ctd" style="background:var(--red)"></span>Policy Divergence Signals</div>
-    ${[
-      ['EUR/USD','ECB cut + Fed hold → EUR structural headwinds. Watch ECB pace vs Fed cuts.','var(--red)'],
-      ['GBP/USD','BoE cutting imminent vs Fed hold → GBP weakness into H2 2024.','var(--red)'],
-      ['AUD/USD','RBA hold vs Fed hold → neutral. China PMI + commodities key differentiator.','var(--amber)'],
-      ['USD/JPY','BoJ ultra-dovish vs Fed hold → carry intact. Watch 150–152 intervention zone.','var(--green)'],
-      ['USD/CAD','BoC first G7 to cut → 50bp below Fed. Structural CAD pressure building.','var(--amber)'],
-      ['AUD/JPY','RBA hold vs BoJ ultra-easy → +4.25% carry. Risk-on trade of 2024.','var(--green)'],
-    ].map(([p,s,c])=>`<div class="sig-row"><div class="sig-dot" style="background:${c}"></div><div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;width:68px;flex-shrink:0">${p}</div><div class="sig-name" style="font-size:11px">${s}</div></div>`).join('')}
-  </div>
-</div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  LOOK AHEAD PAGE
-// ═══════════════════════════════════════════════════════════════
-const CAL=[
-  {d:'Mon May 27',e:[{t:'All Day',f:'🇺🇸',n:'US Memorial Day — thin liquidity',i:'low',fo:'—',pr:'—'}]},
-  {d:'Tue May 28',e:[{t:'09:00',f:'🇩🇪',n:'Germany IFO Business Climate',i:'med',fo:'89.9',pr:'89.4'},{t:'14:00',f:'🇺🇸',n:'US CB Consumer Confidence',i:'high',fo:'96.0',pr:'97.0'}]},
-  {d:'Wed May 29',e:[{t:'13:30',f:'🇺🇸',n:'US Prelim GDP Q1 QoQ',i:'high',fo:'1.3%',pr:'1.3%'},{t:'19:00',f:'🇺🇸',n:'FOMC Meeting Minutes',i:'high',fo:'—',pr:'—'}]},
-  {d:'Thu May 30',e:[{t:'02:30',f:'🇦🇺',n:'Australia Retail Sales MoM',i:'med',fo:'0.2%',pr:'0.4%'},{t:'08:55',f:'🇩🇪',n:'Germany Unemployment Change',i:'med',fo:'8K',pr:'10K'},{t:'13:30',f:'🇨🇦',n:'Canada GDP MoM',i:'high',fo:'0.3%',pr:'0.2%'},{t:'13:30',f:'🇺🇸',n:'US Core PCE YoY ⭐',i:'high',fo:'2.7%',pr:'2.8%'},{t:'13:30',f:'🇺🇸',n:'US Initial Jobless Claims',i:'med',fo:'218K',pr:'215K'}]},
-  {d:'Fri May 31',e:[{t:'02:00',f:'🇨🇳',n:'China Caixin Mfg PMI',i:'med',fo:'51.5',pr:'51.4'},{t:'09:00',f:'🇪🇺',n:'Eurozone CPI Flash YoY',i:'high',fo:'2.5%',pr:'2.4%'},{t:'13:30',f:'🇨🇦',n:'Canada Employment Change',i:'high',fo:'20.0K',pr:'90.4K'},{t:'15:00',f:'🇺🇸',n:'US ISM Manufacturing PMI',i:'high',fo:'49.6',pr:'49.2'}]},
-];
-function renderLookAhead(){
-  const checks=[
-    {i:'🔍',t:'Check overnight Asia session moves and range completion'},
-    {i:'📰',t:'Scan for overnight CB speeches or macro headlines'},
-    {i:'📊',t:"Identify today's release times — check calendar"},
-    {i:'🎯',t:'Mark S/R levels for each pair you plan to trade'},
-    {i:'📐',t:'Review Z-scores — flag any pair beyond ±2σ'},
-    {i:'💱',t:'Check yield spread changes vs yesterday'},
-    {i:'⚠️',t:'Check VIX + DXY — confirm risk environment'},
-    {i:'🏦',t:'Any Fed/CB speaker scheduled today?'},
-    {i:'📅',t:'Set alerts 15 min before high-impact releases'},
-    {i:'💡',t:'Write directional bias per pair before open'},
-    {i:'💤',t:'No entries 15 min before/after high impact'},
-    {i:'📓',t:'Review open trades — still aligned with macro bias?'},
-  ];
-  const biasGuide=[
-    {ev:'FOMC Minutes (Wed)',pairs:'All USD',b:'Hawkish → USD bid. Dovish surprise → USD sell. Rate path language is key.',c:'var(--red)'},
-    {ev:'US Core PCE (Thu)',pairs:'EUR/USD, USD/JPY',b:'Hot >2.8% → pushes back cuts → USD strength. Cool <2.7% → USD weakness.',c:'var(--amber)'},
-    {ev:'EZ CPI Flash (Fri)',pairs:'EUR/USD',b:'Hot >2.5% → fewer ECB cuts → EUR bid. Soft <2.3% → EUR sell.',c:'var(--blue)'},
-    {ev:'Canada GDP + Jobs',pairs:'USD/CAD',b:'Strong → BoC cuts slower → CAD strength. Weak → USD/CAD higher.',c:'var(--teal)'},
-    {ev:'AU Retail Sales (Thu)',pairs:'AUD/USD, AUD/JPY',b:'Strong >0.4% → RBA holds → AUD bid. Weak → AUD/JPY lower.',c:'var(--green)'},
-    {ev:'China Caixin PMI (Fri)',pairs:'AUD/USD, AUD/JPY',b:'Above 51 → China demand → AUD/JPY rally. Contracting → risk-off.',c:'var(--amber)'},
-  ];
-  document.getElementById('tab-lookahead').innerHTML=`
-<div class="card mb">
-  <div class="ct"><span class="ctd" style="background:var(--accent)"></span>Pre-Market Planning Checklist</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-    ${checks.map(c=>`<div class="chk-item" onclick="this.classList.toggle('done');this.querySelector('.chk-box').textContent=this.classList.contains('done')?'✓':'○'">
-      <div class="chk-icon">${c.i}</div><div class="chk-txt">${c.t}</div><div class="chk-box">○</div>
-    </div>`).join('')}
-  </div>
-</div>
-<div class="g2">
-  <div class="card">
-    <div class="ct"><span class="ctd" style="background:var(--amber)"></span>7-Day Economic Calendar</div>
-    ${CAL.map(d=>`<div class="ev-day-hdr">${d.d}</div>${d.e.map(e=>`<div class="ev-row"><div class="ev-time">${e.t}</div><div class="ev-flag">${e.f}</div><div class="ev-name">${e.n}</div><div class="ev-impact i-${e.i}">${e.i.toUpperCase()}</div><div class="ev-fv">F: ${e.fo}<br>P: ${e.pr}</div></div>`).join('')}`).join('')}
-  </div>
-  <div class="card">
-    <div class="ct"><span class="ctd" style="background:var(--pink)"></span>Event → Pair Bias Guide</div>
-    ${biasGuide.map(b=>`<div style="padding:8px 11px;margin-bottom:7px;background:var(--bg3);border-radius:var(--rs);border-left:3px solid ${b.c}">
-      <div style="display:flex;justify-content:space-between;margin-bottom:3px"><div style="font-size:11px;font-weight:700">${b.ev}</div><div style="font-family:'DM Mono',monospace;font-size:8px;color:${b.c};font-weight:700">${b.pairs}</div></div>
-      <div style="font-size:11px;color:var(--text2);line-height:1.5">${b.b}</div>
-    </div>`).join('')}
-  </div>
-</div>`;
-}
 
 // ═══════════════════════════════════════════════════════════════
 //  Z-SCORES PAGE
@@ -1179,6 +1100,7 @@ async function loadAll(){
   // Fire all sources in parallel — no sequential blocking
   const [
     eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
+    eurgbp, eurchf, audnzd, usdchf,
     dxy, vix, spx, hyg, gold,
     us10y, us2y, us5y, us30y,
     de10y, de2y,
@@ -1190,6 +1112,7 @@ async function loadAll(){
     // FX — Frankfurter (daily, free)
     fetchFX('EUR','USD',90), fetchFX('GBP','USD',90), fetchFX('AUD','USD',90),
     fetchFX('USD','JPY',90), fetchFX('USD','CAD',90), fetchFX('AUD','JPY',90),
+    fetchFX('EUR','GBP',90), fetchFX('EUR','CHF',90), fetchFX('AUD','NZD',90), fetchFX('USD','CHF',90),
     // Cross-asset — Yahoo Finance (daily, free)
     fetchYahoo('DX-Y.NYB'), fetchYahoo('^VIX'), fetchYahoo('^GSPC'),
     fetchYahoo('HYG'), fetchYahoo('GC=F'),
@@ -1212,6 +1135,7 @@ async function loadAll(){
 
   // Assemble state
   S={ eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
+      eurgbp, eurchf, audnzd, usdchf,
       dxy, vix, spx, hyg, gold,
       us10y, us2y, us5y, us30y,
       de10y, de2y,
@@ -1227,9 +1151,7 @@ async function loadAll(){
   updateTicker();
   updateFreshnessBar();
   renderOverview();
-  ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy'].forEach(renderPairPage);
-  renderCBPolicy();
-  renderLookAhead();
+  ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy','eurgbp','eurchf','audnzd','usdchf'].forEach(renderPairPage);
   renderZScoresPage();
 }
 
@@ -1251,7 +1173,7 @@ function showTab(name,btn){
   if(btn) btn.classList.add('active');
 }
 function showTabById(name){
-  const labels={eurusd:'EUR/USD',gbpusd:'GBP/USD',audusd:'AUD/USD',usdjpy:'USD/JPY',usdcad:'USD/CAD',audjpy:'AUD/JPY'};
+  const labels={eurusd:'EUR/USD',gbpusd:'GBP/USD',audusd:'AUD/USD',usdjpy:'USD/JPY',usdcad:'USD/CAD',audjpy:'AUD/JPY',eurgbp:'EUR/GBP',eurchf:'EUR/CHF',audnzd:'AUD/NZD',usdchf:'USD/CHF'};
   document.querySelectorAll('.nav-btn').forEach(b=>{ if(b.textContent.trim()===labels[name]) showTab(name,b); });
 }
 
@@ -1281,8 +1203,6 @@ scheduleAutoRefresh();
 setInterval(()=>{ CACHE.clear(); loadAll(); }, 4*3600*1000);
 
 // Boot
-renderLookAhead();
-renderCBPolicy();
 loadAll();
 </script>
 </body>
