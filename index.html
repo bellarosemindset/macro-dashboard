@@ -453,8 +453,8 @@ async function fetchFX(base,quote,days=90){
     const today=new Date(), from=new Date(today); from.setDate(from.getDate()-days);
     const fmt=d=>d.toISOString().split('T')[0];
     const [lr,hr]=await Promise.all([
-      pfetch(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`),
-      pfetch(`https://api.frankfurter.app/${fmt(from)}..${fmt(today)}?from=${base}&to=${quote}`)
+      pfetch(`https://api.frankfurter.dev/v1/latest?from=${base}&to=${quote}`),
+      pfetch(`https://api.frankfurter.dev/v1/${fmt(from)}..${fmt(today)}?from=${base}&to=${quote}`)
     ]);
     const latest=await lr.json(), hist=await hr.json();
     const price=latest.rates[quote];
@@ -570,7 +570,7 @@ async function fetchMoF(colIdx=10){
   const ck=`mof_${colIdx}`;
   const c=CACHE.get(ck); if(c) return c;
   try{
-    const url='https://www.mof.go.jp/english/jgbs/reference/interest_rate/jgbcme.csv';
+    const url='https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv';
     const r=await pfetch(url);
     const txt=await r.text();
     const lines=txt.trim().split('\n');
@@ -595,8 +595,8 @@ async function fetchMoF(colIdx=10){
 
 // ═══════════════════════════════════════════════════════════════
 //  CANADA YIELDS — Bank of Canada Valet API (DAILY JSON)
-//  V39055 = Government of Canada benchmark bond yield, 10-year
-//  V39051 = Government of Canada benchmark bond yield, 2-year
+//  BD.CDN.10YR.DQ.YLD = Government of Canada benchmark bond yield, 10-year
+//  BD.CDN.2YR.DQ.YLD  = Government of Canada benchmark bond yield, 2-year
 // ═══════════════════════════════════════════════════════════════
 async function fetchBoC(seriesId){
   const ck=`boc_${seriesId}`;
@@ -622,26 +622,7 @@ async function fetchBoC(seriesId){
 async function fetchRBA(){
   const ck='rba_10y';
   const c=CACHE.get(ck); if(c) return c;
-  // --- Attempt 1: RBA Statistics CSV (Table F2 - Capital Market Yields) ---
-  try{
-    // RBA publishes F2 daily data; direct CSV URL for recent data
-    const url='https://www.rba.gov.au/statistics/tables/xls-hist/f02dhist.xls';
-    const r=await pfetch(url,8000);
-    // If we get here, the request succeeded but XLS is not easily parsed in browser
-    // Try the more recent shorter file instead
-    throw new Error('XLS not parseable without SheetJS');
-  }catch(e){}
-
-  // --- Attempt 2: RBA direct stats endpoint for overnight cash rate + bond yields ---
-  try{
-    // RBA publishes a simple CSV through their statistics portal
-    const url='https://www.rba.gov.au/statistics/tables/xls/f02d.xls';
-    const r=await pfetch(url,8000);
-    // Still XLS — skip
-    throw new Error('XLS format');
-  }catch(e){}
-
-  // --- Attempt 3: Yahoo Finance for AUS 10Y (GACGB10 or AU10YT=RR) ---
+  // --- Attempt 1: Yahoo Finance for AUS 10Y ---
   try{
     const r=await fetchYahoo('AU10YT=RR');
     if(r&&r.price>0){
@@ -1368,8 +1349,8 @@ async function loadAll(){
     // Col 2 = 2Y, Col 10 = 10Y in MoF CSV
     fetchMoF(2), fetchMoF(10),
     // Canada — Bank of Canada Valet API (daily)
-    // V39055 = 10Y GoC bond, V39051 = 2Y GoC bond
-    fetchBoC('V39055'), fetchBoC('V39051'),
+    // BD.CDN.10YR.DQ.YLD = 10Y GoC bond, BD.CDN.2YR.DQ.YLD = 2Y GoC bond
+    fetchBoC('BD.CDN.10YR.DQ.YLD'), fetchBoC('BD.CDN.2YR.DQ.YLD'),
     // Australia — RBA (daily attempt) with FRED monthly fallback
     fetchRBA(),
   ]);
