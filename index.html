@@ -491,7 +491,7 @@ async function fetchYahoo(ticker){
 async function fetchFRED(seriesId,limit=90){
   const ck=`fred_${seriesId}`;
   const c=CACHE.get(ck); if(c) return c;
-  const key='b2b3bbae5e2c732c442f2e1f6b7766b9';
+  const key='0f8688eb7a57806433f880bf881a20b6';
   try{
     const url=`https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${key}&file_type=json&limit=${limit}&sort_order=desc`;
     const r=await pfetch(url);
