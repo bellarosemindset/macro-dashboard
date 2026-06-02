@@ -585,7 +585,7 @@ async function fetchMoF(colIdx=10){
     const dataLines=lines.filter(l=>{
       const first=l.split(',')[0].trim().replace(/"/g,'');
       // Date lines start with a date like "2024/01/04"
-      return /^\d{4}\/\d{2}\/\d{2}/.test(first);
+      return /^\d{4}\/\d{1,2}\/\d{1,2}/.test(first);
     }).slice(-90);
     const closes=dataLines.map(l=>{
       const cols=l.split(',');
