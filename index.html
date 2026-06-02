@@ -1201,7 +1201,7 @@ function renderMorningBriefing(){
         </div>
       </div>
       <div class="bias-factors">
-        ${b.factors.map(fct=>`<div class="bias-factor"><span class="bias-fl">${fct.l}</span><span class="bias-fv" style="color:${fct.v>0?'var(--green)':fct.v<0?'var(--red)':'var(--text3)'">${fct.v>0?'+'+fct.v:fct.v} <span style="color:var(--text3);font-size:8px">(${fct.note})</span></span></div>`).join('')}
+        ${b.factors.map(fct=>`<div class="bias-factor"><span class="bias-fl">${fct.l}</span><span class="bias-fv" style="color:${fct.v>0?'var(--green)':fct.v<0?'var(--red)':'var(--text3)'}">${fct.v>0?'+'+fct.v:fct.v} <span style="color:var(--text3);font-size:8px">(${fct.note})</span></span></div>`).join('')}
         <div class="bias-factor" style="border-top:1px solid var(--border2);margin-top:3px;padding-top:3px">
           <span class="bias-fl" style="font-weight:700;color:var(--text)">Total score</span>
           <span class="bias-fv" style="color:${col};font-weight:700">${b.score>=0?'+':''}${b.score} → ${b.label}</span>
