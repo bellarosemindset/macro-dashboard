@@ -331,7 +331,7 @@ body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; mi
 </div>
 
 <div class="page-wrap">
-  <div class="tab-page active" id="tab-overview"><div class="loading-screen"><div class="spinner"></div><div>Fetching live data from all sources…</div><div class="ls">Frankfurter · Yahoo · FRED · ECB · BoE · MoF Japan · BoC · RBA</div></div></div>
+  <div class="tab-page active" id="tab-overview"><div class="loading-screen"><div class="spinner"></div><div>Fetching live data from all sources…</div><div class="ls">Frankfurter · Yahoo Finance · ECB SDW · MoF Japan · BoC · RBA</div></div></div>
   <div class="tab-page" id="tab-eurusd"></div>
   <div class="tab-page" id="tab-gbpusd"></div>
   <div class="tab-page" id="tab-audusd"></div>
@@ -423,10 +423,17 @@ const ZS={
 //  CORS PROXY + CACHE  (6-hour localStorage, cleared on refresh)
 // ═══════════════════════════════════════════════════════════════
 const PROXY='https://corsproxy.io/?url=';
-async function pfetch(url,ms=14000){
-  const go=u=>{ const ac=new AbortController(); setTimeout(()=>ac.abort(),ms); return fetch(u,{signal:ac.signal}); };
+const PROXY2='https://api.codetabs.com/v1/proxy?quest=';
+async function pfetch(url,ms=7000){
+  const go=(u,t)=>{ const ac=new AbortController(); setTimeout(()=>ac.abort(),t||ms); return fetch(u,{signal:ac.signal}); };
+  // 1. Try direct
   try{ const r=await go(url); if(r.ok) return r; }catch(e){}
-  return go(PROXY+encodeURIComponent(url));
+  // 2. Try corsproxy.io
+  try{ const r=await go(PROXY+encodeURIComponent(url),5000); if(r.ok) return r; }catch(e){}
+  // 3. Try codetabs as last resort
+  try{ const r=await go(PROXY2+encodeURIComponent(url),5000); if(r.ok) return r; }catch(e){}
+  // Return last proxy attempt (may be error response) so callers can handle gracefully
+  return go(PROXY+encodeURIComponent(url),3000);
 }
 const CACHE={
   set(k,v){ try{ localStorage.setItem('fxd2_'+k,JSON.stringify({t:Date.now(),v})); }catch(e){} },
@@ -539,26 +546,29 @@ async function fetchECB(seriesKey){
 async function fetchBoE(seriesCode){
   const ck=`boe_${seriesCode}`;
   const c=CACHE.get(ck); if(c) return c;
+  // Attempt 1: Bank of England Statistics CSV (often 403 blocked externally)
   try{
     const today=new Date();
     const from=new Date(today); from.setFullYear(from.getFullYear()-1);
-    // BoE date format: DD/MM/YYYY
     const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     const url=`https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp?Travel=NIx&FromSeries=1&ToSeries=50&DAT=RNG&FD=${fmt(from)}&TD=${fmt(today)}&FNY=&CSVF=TT&html.x=66&html.y=26&SeriesCodes=${seriesCode}&UsingCodes=Y&LANG=EN&Serialise=Y`;
-    const r=await pfetch(url);
-    const txt=await r.text();
-    const lines=txt.trim().split('\n').slice(1).filter(l=>l.trim());
-    const closes=lines.map(l=>{
-      const parts=l.split(',');
-      const v=parseFloat(parts[parts.length-1]);
-      return isNaN(v)?null:v;
-    }).filter(v=>v!==null);
-    if(!closes.length) return null;
-    const result=normResult(closes);
-    CACHE.set(ck,result);
-    FRESHNESS.boe='DAILY — BoE';
-    return result;
-  }catch(e){ console.warn(`BoE ${seriesCode}`,e); return null; }
+    const ac=new AbortController(); setTimeout(()=>ac.abort(),4000);
+    const r=await fetch(url,{signal:ac.signal});
+    if(r.ok){
+      const txt=await r.text();
+      const lines=txt.trim().split('\n').slice(1).filter(l=>l.trim());
+      const closes=lines.map(l=>{ const parts=l.split(','); const v=parseFloat(parts[parts.length-1]); return isNaN(v)?null:v; }).filter(v=>v!==null);
+      if(closes.length){ const result=normResult(closes); CACHE.set(ck,result); FRESHNESS.boe='DAILY — BoE'; return result; }
+    }
+  }catch(e){}
+  // Attempt 2: Yahoo Finance UK 10Y gilt (GUKG10=F or ^TYX proxy)
+  try{
+    const r=await fetchYahoo('GUKG10%3DF'); // Reuters-style ticker
+    if(r&&r.price>0&&r.price<20){ CACHE.set(ck,r); FRESHNESS.boe='DAILY — Yahoo (UK10Y)'; return r; }
+  }catch(e){}
+  // Attempt 3: ECB AAA EU yield as rough proxy (not UK but correlated)
+  FRESHNESS.boe='UNAVAILABLE';
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -632,14 +642,14 @@ async function fetchRBA(){
     }
   }catch(e){}
 
-  // --- Fallback: FRED monthly series (clearly flagged as monthly) ---
+  // --- Attempt 2: try AU10YT=RR with direct fetch (no proxy, faster fail) ---
   try{
-    const r=await fetchFRED('IRLTLT01AUM156N',24);
-    if(r){
-      FRESHNESS.rba='MONTHLY — FRED fallback';
-      document.getElementById('fr-rba').textContent='MONTHLY FALLBACK';
-      document.getElementById('fr-rba').style.color='var(--red)';
-      return r;
+    const ac=new AbortController(); setTimeout(()=>ac.abort(),4000);
+    const r2=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/AU10YT=RR?interval=1d&range=90d`,{signal:ac.signal});
+    if(r2.ok){
+      const d2=await r2.json();
+      const closes2=d2.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.filter(v=>v!=null);
+      if(closes2?.length){ const result2=normResult(closes2); CACHE.set(ck,result2); FRESHNESS.rba='DAILY — Yahoo (AU10Y)'; return result2; }
     }
   }catch(e){}
 
@@ -1370,12 +1380,13 @@ async function loadAll(){
     {weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
   btn.classList.remove('spinning');
 
-  updateTicker();
-  updateFreshnessBar();
-  renderOverview();
-  renderMorningBriefing();
-  ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy','eurgbp','eurchf','audnzd','usdchf'].forEach(renderPairPage);
-  renderZScoresPage();
+  const safe=(fn,name)=>{ try{ fn(); }catch(e){ console.error('Render error in '+name,e); } };
+  safe(updateTicker,'ticker');
+  safe(updateFreshnessBar,'freshness');
+  safe(renderOverview,'overview');
+  safe(renderMorningBriefing,'briefing');
+  ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy','eurgbp','eurchf','audnzd','usdchf'].forEach(k=>safe(()=>renderPairPage(k),'pair:'+k));
+  safe(renderZScoresPage,'zscores');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1426,7 +1437,11 @@ scheduleAutoRefresh();
 setInterval(()=>{ CACHE.clear(); loadAll(); }, 4*3600*1000);
 
 // Boot
-loadAll();
+loadAll().catch(e=>{
+  console.error('loadAll failed:',e);
+  document.getElementById('refreshBtn').classList.remove('spinning');
+  document.getElementById('tab-overview').innerHTML=`<div class="data-note">⚠️ Data load error: ${e.message}. <a href="javascript:forceRefresh()" style="color:var(--accent)">Click to retry</a>.</div>`;
+});
 </script>
 </body>
 </html>
