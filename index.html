@@ -262,6 +262,49 @@ body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; mi
 </head>
 <body>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     PASSWORD GATE — change ACCESS_PASSWORD below to set your password
+     Users only need to enter it once per browser (stored in localStorage)
+═══════════════════════════════════════════════════════════════ -->
+<div id="auth-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#0d0f14;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif">
+  <div style="background:#13161d;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:36px 40px;width:100%;max-width:360px;text-align:center">
+    <div style="font-size:22px;font-weight:700;margin-bottom:6px">FX<span style="color:#7c6af7">/</span>MACRO</div>
+    <div style="font-size:12px;color:#8a8fa8;margin-bottom:28px">Internal Dashboard · Enter access password</div>
+    <input id="auth-input" type="password" placeholder="Password"
+      style="width:100%;background:#1a1d26;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:12px 14px;color:#e8eaf0;font-size:14px;font-family:'DM Mono',monospace;outline:none;box-sizing:border-box;margin-bottom:10px"
+      onkeydown="if(event.key==='Enter')checkAuth()">
+    <div id="auth-err" style="font-size:11px;color:#ff6b6b;min-height:16px;margin-bottom:8px"></div>
+    <button onclick="checkAuth()"
+      style="width:100%;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;border-radius:8px;padding:12px;font-size:13px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer">
+      Access Dashboard →
+    </button>
+  </div>
+</div>
+
+<script>
+// ── CHANGE THIS PASSWORD ──────────────────────────────────────
+const ACCESS_PASSWORD = 'fxmacro2026';
+// ─────────────────────────────────────────────────────────────
+const AUTH_KEY = 'fxd_auth_v1';
+function checkAuth(){
+  const input = document.getElementById('auth-input').value;
+  if(input === ACCESS_PASSWORD){
+    localStorage.setItem(AUTH_KEY, btoa(ACCESS_PASSWORD));
+    document.getElementById('auth-overlay').style.display = 'none';
+  } else {
+    document.getElementById('auth-err').textContent = 'Incorrect password — try again';
+    document.getElementById('auth-input').value = '';
+    document.getElementById('auth-input').focus();
+  }
+}
+// Check if already authenticated
+if(localStorage.getItem(AUTH_KEY) !== btoa(ACCESS_PASSWORD)){
+  document.getElementById('auth-overlay').style.display = 'flex';
+  // Focus input after fonts load
+  window.addEventListener('load', ()=>document.getElementById('auth-input')?.focus());
+}
+</script>
+
 <div class="header">
   <div class="header-left">
     <div class="dash-title">FX<span>/</span>MACRO</div>
