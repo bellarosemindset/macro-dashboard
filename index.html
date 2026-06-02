@@ -289,7 +289,7 @@ body{ background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; mi
 <!-- DATA FRESHNESS INDICATOR BAR -->
 <div class="freshness-bar">
   <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">FX PRICES</span><span class="fresh-val" style="color:var(--green)" id="fr-fx">DAILY</span></div>
-  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">US YIELDS (FRED)</span><span class="fresh-val" style="color:var(--amber)" id="fr-us">1-DAY LAG</span></div>
+  <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">US YIELDS (Yahoo)</span><span class="fresh-val" style="color:var(--green)" id="fr-us">DAILY</span></div>
   <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">EUR/DE (ECB)</span><span class="fresh-val" style="color:var(--green)" id="fr-ecb">DAILY</span></div>
   <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">UK (BOE)</span><span class="fresh-val" style="color:var(--green)" id="fr-boe">DAILY</span></div>
   <div class="fresh-item"><div class="fresh-dot" style="background:var(--green)"></div><span class="fresh-label">JAPAN (MOF)</span><span class="fresh-val" style="color:var(--green)" id="fr-mof">DAILY</span></div>
@@ -725,7 +725,7 @@ function updateFreshnessBar(){
     if(el){ el.textContent=text; el.style.color=col; }
   };
   set('fr-fx',  S.eurusd?'DAILY':'ERROR',      S.eurusd?'var(--green)':'var(--red)');
-  set('fr-us',  S.us10y?'1-DAY LAG':'ERROR',   S.us10y?'var(--amber)':'var(--red)');
+  set('fr-us',  S.us10y?'DAILY':'ERROR',         S.us10y?'var(--green)':'var(--red)');
   set('fr-ecb', S.de10y?'DAILY':'ERROR',        S.de10y?'var(--green)':'var(--red)');
   set('fr-boe', S.uk10y?'DAILY':'ERROR',        S.uk10y?'var(--green)':'var(--red)');
   set('fr-mof', S.jp10y?'DAILY':'ERROR',        S.jp10y?'var(--green)':'var(--red)');
@@ -880,7 +880,7 @@ ${missing.length?`<div class="data-note">⚠️ Still loading: <strong>${missing
   <div class="metric-card"><div class="ml">EUR/USD</div><div class="mv ${cc(S.eurusd?.pct)}">${S.eurusd?S.eurusd.price.toFixed(5):'—'}</div><div class="mch ${cc(S.eurusd?.pct)}">${pct(S.eurusd?.pct)}</div><div class="mt">Frankfurter · daily</div></div>
   <div class="metric-card"><div class="ml">DXY</div><div class="mv ${cc(S.dxy?.pct)}">${S.dxy?S.dxy.price.toFixed(2):'—'}</div><div class="mch ${cc(S.dxy?.pct)}">${pct(S.dxy?.pct)}</div><div class="mt">Yahoo · daily</div></div>
   <div class="metric-card"><div class="ml">VIX</div><div class="mv ${S.vix?.price>25?'neg':S.vix?.price<15?'pos':'neu'}">${S.vix?S.vix.price.toFixed(1):'—'}</div><div class="mch ${S.vix?.price>25?'neg':'pos'}">${S.vix?.price>25?'Elevated':S.vix?.price<15?'Risk-on':'Normal'}</div><div class="mt">Yahoo · daily</div></div>
-  <div class="metric-card"><div class="ml">US 10Y</div><div class="mv">${S.us10y?S.us10y.price.toFixed(2)+'%':'—'}</div><div class="mch ${cc(S.us10y?.pct)}">${pct(S.us10y?.pct)}</div><div class="mt">FRED · 1-day lag</div></div>
+  <div class="metric-card"><div class="ml">US 10Y</div><div class="mv">${S.us10y?S.us10y.price.toFixed(2)+'%':'—'}</div><div class="mch ${cc(S.us10y?.pct)}">${pct(S.us10y?.pct)}</div><div class="mt">Yahoo · daily</div></div>
   <div class="metric-card"><div class="ml">US–JP 10Y Spread</div><div class="mv ${sp_usjp>200?'neg':'pos'}">${sp_usjp!=null?bp(sp_usjp):'—'}</div><div class="mt">${sp_usjp>200?'Extreme carry':'Normal'}</div></div>
   <div class="metric-card"><div class="ml">US Curve 2s10s</div><div class="mv ${usCurve!=null&&usCurve<0?'neg':'pos'}">${bp(usCurve)}</div><div class="mt">${usCurve!=null&&usCurve<0?'INVERTED':'Positive'}</div></div>
 </div>
@@ -891,8 +891,8 @@ ${missing.length?`<div class="data-note">⚠️ Still loading: <strong>${missing
   </div>
   <div class="card">
     <div class="ct"><span class="ctd" style="background:var(--green)"></span>Daily Yield Spreads<span class="badge b-live">ALL DAILY</span></div>
-    ${renderYieldRow('US 10Y',S.us10y,'FRED GS10','ft-1d')}
-    ${renderYieldRow('US 2Y', S.us2y, 'FRED GS2', 'ft-1d')}
+    ${renderYieldRow('US 10Y',S.us10y,'Yahoo ^TNX','ft-daily')}
+    ${renderYieldRow('US 2Y (13W)',S.us2y,'Yahoo ^IRX','ft-daily')}
     ${renderYieldRow('DE 10Y',S.de10y,'ECB SDW',  'ft-daily')}
     ${renderYieldRow('UK 10Y',S.uk10y,'BoE API',  'ft-daily')}
     ${renderYieldRow('JP 10Y',S.jp10y,'MoF Japan','ft-daily')}
@@ -918,16 +918,16 @@ ${missing.length?`<div class="data-note">⚠️ Still loading: <strong>${missing
 //  PAIR PAGES  (shared template, all 6 pairs)
 // ═══════════════════════════════════════════════════════════════
 const PAIR_CFG={
-  eurusd:{sym:'EUR/USD',dp:5,usdBase:false,yA:'de10y',yA2:'de2y',yB:'us10y',yB2:'us2y',yALbl:'DE 10Y',yBLbl:'US 10Y',yASrc:'ECB SDW·daily',yBSrc:'FRED·1d'},
-  gbpusd:{sym:'GBP/USD',dp:5,usdBase:false,yA:'uk10y',yA2:null,    yB:'us10y',yB2:'us2y',yALbl:'UK 10Y',yBLbl:'US 10Y',yASrc:'BoE·daily',   yBSrc:'FRED·1d'},
-  audusd:{sym:'AUD/USD',dp:5,usdBase:false,yA:'au10y',yA2:null,    yB:'us10y',yB2:'us2y',yALbl:'AU 10Y',yBLbl:'US 10Y',yASrc:'RBA·daily',   yBSrc:'FRED·1d'},
-  usdjpy:{sym:'USD/JPY',dp:2,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'jp10y',yB2:null,  yALbl:'US 10Y',yBLbl:'JP 10Y',yASrc:'FRED·1d',    yBSrc:'MoF·daily'},
-  usdcad:{sym:'USD/CAD',dp:5,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'ca10y',yB2:null,  yALbl:'US 10Y',yBLbl:'CA 10Y',yASrc:'FRED·1d',    yBSrc:'BoC·daily'},
+  eurusd:{sym:'EUR/USD',dp:5,usdBase:false,yA:'de10y',yA2:'de2y',yB:'us10y',yB2:'us2y',yALbl:'DE 10Y',yBLbl:'US 10Y',yASrc:'ECB SDW·daily',yBSrc:'Yahoo·daily'},
+  gbpusd:{sym:'GBP/USD',dp:5,usdBase:false,yA:'uk10y',yA2:null,    yB:'us10y',yB2:'us2y',yALbl:'UK 10Y',yBLbl:'US 10Y',yASrc:'BoE·daily',   yBSrc:'Yahoo·daily'},
+  audusd:{sym:'AUD/USD',dp:5,usdBase:false,yA:'au10y',yA2:null,    yB:'us10y',yB2:'us2y',yALbl:'AU 10Y',yBLbl:'US 10Y',yASrc:'RBA·daily',   yBSrc:'Yahoo·daily'},
+  usdjpy:{sym:'USD/JPY',dp:2,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'jp10y',yB2:null,  yALbl:'US 10Y',yBLbl:'JP 10Y',yASrc:'Yahoo·daily',    yBSrc:'MoF·daily'},
+  usdcad:{sym:'USD/CAD',dp:5,usdBase:true, yA:'us10y',yA2:'us2y',  yB:'ca10y',yB2:null,  yALbl:'US 10Y',yBLbl:'CA 10Y',yASrc:'Yahoo·daily',    yBSrc:'BoC·daily'},
   audjpy:{sym:'AUD/JPY',dp:3,usdBase:false,yA:'au10y',yA2:null,    yB:'jp10y',yB2:null,  yALbl:'AU 10Y',yBLbl:'JP 10Y',yASrc:'RBA·daily',  yBSrc:'MoF·daily'},
   eurgbp:{sym:'EUR/GBP',dp:5,usdBase:false,yA:'de10y',yA2:null,    yB:'uk10y',yB2:null,  yALbl:'DE 10Y',yBLbl:'UK 10Y',yASrc:'ECB SDW·daily',yBSrc:'BoE·daily'},
   eurchf:{sym:'EUR/CHF',dp:5,usdBase:false,yA:'de10y',yA2:null,    yB:null,   yB2:null,  yALbl:'DE 10Y',yBLbl:'—',     yASrc:'ECB SDW·daily',yBSrc:'n/a'},
   audnzd:{sym:'AUD/NZD',dp:5,usdBase:false,yA:'au10y',yA2:null,    yB:null,   yB2:null,  yALbl:'AU 10Y',yBLbl:'—',     yASrc:'RBA·daily',   yBSrc:'n/a'},
-  usdchf:{sym:'USD/CHF',dp:5,usdBase:true, yA:'us10y',yA2:'us2y',  yB:null,   yB2:null,  yALbl:'US 10Y',yBLbl:'—',     yASrc:'FRED·1d',     yBSrc:'n/a'},
+  usdchf:{sym:'USD/CHF',dp:5,usdBase:true, yA:'us10y',yA2:'us2y',  yB:null,   yB2:null,  yALbl:'US 10Y',yBLbl:'—',     yASrc:'Yahoo·daily',     yBSrc:'n/a'},
 };
 const PAIR_SIGNALS={
   eurusd:[{n:'US Core PCE',v:'Live via FRED',s:'Watch vs 2% target',c:'var(--red)'},{n:'EZ CPI',v:'ECB target',s:'Disinflation path',c:'var(--green)'},{n:'ECB',v:'Easing cycle',s:'Gradual cuts underway',c:'var(--amber)'},{n:'Fed',v:'Data-dependent',s:'Watch NFP + CPI',c:'var(--red)'},{n:'EZ PMI',v:'Mfg weak',s:'Services resilient',c:'var(--amber)'},{n:'US ISM Mfg',v:'Live',s:'Key divergence driver',c:'var(--amber)'}],
@@ -1001,7 +1001,7 @@ function renderPairPage(key){
   <div class="card">
     <div class="ct"><span class="ctd" style="background:var(--blue)"></span>${cfg.yBLbl} Yields<span class="badge b-daily">${cfg.yBSrc}</span></div>
     ${renderYieldRow(cfg.yBLbl,yB,cfg.yBSrc,cfg.yBSrc.includes('FRED')?'ft-1d':'ft-daily')}
-    ${yB2?renderYieldRow('US 2Y',yB2,'FRED GS2','ft-1d'):''}
+    ${yB2?renderYieldRow('US 2Y (13W)',yB2,'Yahoo ^IRX','ft-daily'):''}
     ${key==='audjpy'?`
     <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
       <div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--text3);margin-bottom:6px">CARRY ANALYSIS</div>
@@ -1171,7 +1171,7 @@ function renderMorningBriefing(){
   const cv=_curveVal();
   const curveArrow=cv==null?'':cv>0.05?'↑ steepening':cv<-0.05?'↓ inverting':'→ flat';
   const curveCol=cv==null?'var(--text3)':cv>0?'var(--green)':'var(--red)';
-  const curveSource=S.t10y2y?'FRED T10Y2Y · direct':'FRED GS10−GS2 · calc';
+  const curveSource=S.t10y2y?'FRED T10Y2Y · direct':'Yahoo ^TNX−^IRX · calc';
 
   const biasPairs=['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy'];
   const biasCards=biasPairs.map(key=>{
@@ -1247,7 +1247,7 @@ function renderZScoresPage(){
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">
     ${[
       ['FX Prices','Frankfurter','DAILY','var(--green)',S.eurusd],
-      ['US Yields','FRED GS10/GS2','1-DAY LAG','var(--amber)',S.us10y],
+      ['US Yields','Yahoo ^TNX/^IRX','DAILY','var(--green)',S.us10y],
       ['EUR/DE Yields','ECB SDW','DAILY','var(--green)',S.de10y],
       ['UK Yields','BoE Statistics API','DAILY','var(--green)',S.uk10y],
       ['Japan JGBs','MoF Japan CSV','DAILY','var(--green)',S.jp10y],
@@ -1338,8 +1338,8 @@ async function loadAll(){
     // Cross-asset — Yahoo Finance (daily, free)
     fetchYahoo('DX-Y.NYB'), fetchYahoo('^VIX'), fetchYahoo('^GSPC'),
     fetchYahoo('HYG'), fetchYahoo('GC=F'),
-    // US Yields — FRED (daily, 1-day lag, your existing key)
-    fetchFRED('GS10',90), fetchFRED('GS2',90), fetchFRED('GS5',90), fetchFRED('GS30',90), fetchFRED('T10Y2Y',90),
+    // US Yields — Yahoo Finance (FRED API keys expired; ^TNX=10Y ^IRX=13W/short-rate ^FVX=5Y ^TYX=30Y)
+    fetchYahoo('^TNX'), fetchYahoo('^IRX'), fetchYahoo('^FVX'), fetchYahoo('^TYX'), Promise.resolve(null),
     // EUR/DE Yields — ECB SDW (daily)
     fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'),
     fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'),
