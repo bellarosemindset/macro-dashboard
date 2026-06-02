@@ -1323,17 +1323,35 @@ function renderZScoresPage(){
 //  RENDER ENGINE — called after data loads (or times out)
 // ═══════════════════════════════════════════════════════════════
 function renderAll(){
-  const btn=document.getElementById('refreshBtn');
-  btn.classList.remove('spinning');
-  document.getElementById('ts').textContent=new Date().toLocaleString('en-GB',
-    {weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-  const safe=(fn,name)=>{ try{ fn(); }catch(e){ console.error('Render error ['+name+']:',e); } };
-  safe(updateTicker,'ticker');
-  safe(updateFreshnessBar,'freshness');
-  safe(renderOverview,'overview');
-  safe(renderMorningBriefing,'briefing');
-  ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy','eurgbp','eurchf','audnzd','usdchf'].forEach(k=>safe(()=>renderPairPage(k),'pair:'+k));
-  safe(renderZScoresPage,'zscores');
+  try{
+    const btn=document.getElementById('refreshBtn');
+    if(btn) btn.classList.remove('spinning');
+    const ts=document.getElementById('ts');
+    if(ts) ts.textContent=new Date().toLocaleString('en-GB',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+
+    // Visible error helper — shows error in page AND console
+    const safe=(fn,name)=>{
+      try{ fn(); }
+      catch(e){
+        console.error('Render error ['+name+']:',e);
+        const ov=document.getElementById('tab-overview');
+        if(ov&&ov.querySelector('.loading-screen')){
+          ov.innerHTML=`<div class="data-note" style="margin:20px">⚠️ <strong>Render error in [${name}]:</strong> ${e.message}<br><small style="color:var(--text3)">${e.stack||''}</small><br><br><a href="javascript:forceRefresh()" style="color:var(--accent)">Click to retry</a></div>`;
+        }
+      }
+    };
+
+    safe(updateTicker,'ticker');
+    safe(updateFreshnessBar,'freshness');
+    safe(renderOverview,'overview');
+    safe(renderMorningBriefing,'briefing');
+    ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy','eurgbp','eurchf','audnzd','usdchf'].forEach(k=>safe(()=>renderPairPage(k),'pair:'+k));
+    safe(renderZScoresPage,'zscores');
+  }catch(e){
+    console.error('renderAll fatal:',e);
+    const ov=document.getElementById('tab-overview');
+    if(ov) ov.innerHTML=`<div class="data-note" style="margin:20px">⚠️ <strong>Fatal error in renderAll:</strong> ${e.message}<br><small style="color:var(--text3)">${e.stack||''}</small><br><br><a href="javascript:forceRefresh()" style="color:var(--accent)">Click to retry</a></div>`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1343,9 +1361,12 @@ async function loadAll(){
   const btn=document.getElementById('refreshBtn');
   btn.classList.add('spinning');
 
+  const setStatus=t=>{ const el=document.getElementById('load-status'); if(el) el.textContent=t; };
+  setStatus('Firing '+28+' parallel fetches…');
+
   // Hard 25s master timeout — renders with whatever data arrived
   const masterTimer=setTimeout(()=>{
-    console.warn('loadAll: 25s master timeout fired — rendering with available data');
+    setStatus('25s timeout — rendering with partial data');
     renderAll();
   },25000);
 
@@ -1375,6 +1396,7 @@ async function loadAll(){
   ]);
 
   clearTimeout(masterTimer);
+  setStatus('All fetches done — rendering…');
 
   const [
     eurusd,gbpusd,audusd,usdjpy,usdcad,audjpy,
@@ -1433,6 +1455,8 @@ function tick(){
   document.getElementById('sp-ny').classList.toggle('on',h>=13&&h<22);
 }
 setInterval(tick,1000); tick();
+// Debug: confirm JS is executing
+document.getElementById('tab-overview').innerHTML='<div class="loading-screen"><div class="spinner"></div><div>JS loaded — fetching data…</div><div class="ls" id="load-status">Starting…</div></div>';
 
 // ═══════════════════════════════════════════════════════════════
 //  AUTO-REFRESH — daily at 00:05 UTC + every 4h as safety net
