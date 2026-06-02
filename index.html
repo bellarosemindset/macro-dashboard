@@ -423,17 +423,14 @@ const ZS={
 //  CORS PROXY + CACHE  (6-hour localStorage, cleared on refresh)
 // ═══════════════════════════════════════════════════════════════
 const PROXY='https://corsproxy.io/?url=';
-const PROXY2='https://api.codetabs.com/v1/proxy?quest=';
-async function pfetch(url,ms=7000){
+async function pfetch(url,ms=8000){
   const go=(u,t)=>{ const ac=new AbortController(); setTimeout(()=>ac.abort(),t||ms); return fetch(u,{signal:ac.signal}); };
-  // 1. Try direct
+  // 1. Try direct (works for APIs with CORS headers: Frankfurter, ECB, BoC)
   try{ const r=await go(url); if(r.ok) return r; }catch(e){}
-  // 2. Try corsproxy.io
-  try{ const r=await go(PROXY+encodeURIComponent(url),5000); if(r.ok) return r; }catch(e){}
-  // 3. Try codetabs as last resort
-  try{ const r=await go(PROXY2+encodeURIComponent(url),5000); if(r.ok) return r; }catch(e){}
-  // Return last proxy attempt (may be error response) so callers can handle gracefully
-  return go(PROXY+encodeURIComponent(url),3000);
+  // 2. Try corsproxy.io (works for Yahoo Finance, MoF Japan, etc.)
+  try{ const r=await go(PROXY+encodeURIComponent(url),8000); if(r.ok) return r; }catch(e){}
+  // Final: return proxy attempt regardless so callers can handle gracefully
+  return go(PROXY+encodeURIComponent(url),5000);
 }
 const CACHE={
   set(k,v){ try{ localStorage.setItem('fxd2_'+k,JSON.stringify({t:Date.now(),v})); }catch(e){} },

@@ -1,63 +1,67 @@
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>API Test</title>
-<style>body{font-family:monospace;background:#0d0f14;color:#e8eaf0;padding:20px}
+<style>body{font-family:monospace;background:#0d0f14;color:#e8eaf0;padding:20px;max-width:900px}
 .ok{color:#00d68f}.fail{color:#ff6b6b}.pending{color:#ffb347}
-.row{margin:4px 0;padding:6px 10px;background:#13161d;border-radius:4px}
+.row{margin:4px 0;padding:8px 12px;background:#13161d;border-radius:6px;display:flex;gap:10px;align-items:flex-start}
+.status{width:18px;flex-shrink:0}.name{flex:1;font-weight:bold}.val{color:#8a8fa8;font-size:11px}
+h2{color:#7c6af7;margin-bottom:16px}
+.section{font-size:9px;letter-spacing:.1em;color:#555a72;text-transform:uppercase;margin:14px 0 6px;border-bottom:1px solid #1a1d26;padding-bottom:4px}
 </style></head>
 <body>
-<h2 style="color:#7c6af7">FX Dashboard — API Connectivity Test</h2>
+<h2>FX Dashboard — API Connectivity Test v2</h2>
 <div id="out"></div>
 <script>
 const out=document.getElementById('out');
-const log=(name,ok,val)=>{
-  const d=document.createElement('div');
-  d.className='row';
-  d.innerHTML=`<span class="${ok?'ok':'fail'}">${ok?'✅':'❌'}</span> <b>${name}</b>: ${val}`;
-  out.appendChild(d);
-};
-const pend=(name)=>{
-  const d=document.createElement('div');
-  d.className='row pending';
-  d.id='p_'+name.replace(/\W/g,'_');
-  d.innerHTML=`⏳ <b>${name}</b>: testing...`;
-  out.appendChild(d);
-  return d;
-};
-const done=(el,ok,val)=>{
-  el.className='row';
-  el.innerHTML=`<span class="${ok?'ok':'fail'}">${ok?'✅':'❌'}</span> ${el.innerHTML.replace('⏳','').replace('testing...','').trim()}: ${val}`;
-};
-
-async function test(name,url,parse){
-  const el=pend(name);
-  const ac=new AbortController(); setTimeout(()=>ac.abort(),8000);
+const PROXY='https://corsproxy.io/?url=';
+function section(t){const d=document.createElement('div');d.className='section';d.textContent=t;out.appendChild(d);}
+function addRow(name,status,val){
+  const d=document.createElement('div');d.className='row';
+  d.innerHTML=`<span class="status ${status==='ok'?'ok':status==='fail'?'fail':'pending'}">${status==='ok'?'✅':status==='fail'?'❌':'⏳'}</span><span class="name">${name}</span><span class="val">${val}</span>`;
+  out.appendChild(d);return d;
+}
+function updateRow(el,ok,val){
+  el.innerHTML=`<span class="status ${ok?'ok':'fail'}">${ok?'✅':'❌'}</span><span class="name">${el.querySelector('.name').textContent}</span><span class="val">${val}</span>`;
+}
+async function test(name,url,parse,ms=9000){
+  const el=addRow(name,'pending','testing...');
+  const ac=new AbortController();setTimeout(()=>ac.abort(),ms);
   try{
     const r=await fetch(url,{signal:ac.signal});
-    if(!r.ok){done(el,false,`HTTP ${r.status}`);return;}
+    if(!r.ok){updateRow(el,false,`HTTP ${r.status}`);return false;}
     const txt=await r.text();
-    const val=parse?parse(txt):'OK '+txt.slice(0,40);
-    done(el,true,val);
-  }catch(e){done(el,false,e.message||String(e));}
+    if(txt.startsWith('Edge:')||txt.startsWith('Error')){updateRow(el,false,'Proxy error: '+txt.slice(0,60));return false;}
+    const val=parse?parse(txt):txt.slice(0,60);
+    updateRow(el,true,val);return true;
+  }catch(e){updateRow(el,false,e.message);return false;}
 }
 
 async function run(){
-  // 1. Frankfurter direct
-  await test('Frankfurter direct','https://api.frankfurter.dev/v1/latest?from=EUR&to=USD',t=>{const d=JSON.parse(t);return `EUR/USD=${d.rates.USD}`;});
-  // 2. ECB direct
-  await test('ECB SDW direct','https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?lastNObservations=1&format=jsondata',t=>{const d=JSON.parse(t);const obs=d.dataSets[0].series;const k=Object.keys(obs)[0];const v=Object.values(obs[k].observations).pop()[0];return `DE10Y=${v.toFixed(3)}%`;});
-  // 3. BoC direct
-  await test('BoC direct','https://www.bankofcanada.ca/valet/observations/BD.CDN.10YR.DQ.YLD/json?recent=1',t=>{const d=JSON.parse(t);const o=d.observations[0];return `CA10Y=${o['BD.CDN.10YR.DQ.YLD'].v}%`;});
-  // 4. Yahoo Finance direct (DXY)
-  await test('Yahoo Finance direct (DXY)','https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=1d&range=5d',t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `DXY=${c[c.length-1].toFixed(2)}`;});
-  // 5. Yahoo via corsproxy
-  await test('Yahoo via corsproxy.io (VIX)','https://corsproxy.io/?url='+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `VIX=${c[c.length-1].toFixed(1)}`;});
-  // 6. Yahoo via codetabs
-  await test('Yahoo via codetabs (SPX)','https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `SPX=${c[c.length-1].toFixed(0)}`;});
-  // 7. MoF Japan via codetabs
-  await test('MoF Japan via codetabs','https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent('https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv'),t=>{const lines=t.trim().split('\n').filter(l=>/^\d{4}\/\d{2}\/\d{2}/.test(l));const last=lines[lines.length-1].split(',');return `JP10Y=${last[10]}%`;});
-  // 8. BoE direct
-  await test('BoE direct','https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp?Travel=NIx&FromSeries=1&ToSeries=50&DAT=RNG&FD=01/01/2026&TD=01/06/2026&FNY=&CSVF=TT&html.x=66&html.y=26&SeriesCodes=IUDMNPY&UsingCodes=Y&LANG=EN&Serialise=Y',t=>{const lines=t.trim().split('\n').filter(l=>l.trim()&&!l.startsWith('"'));return `UK10Y=${lines[lines.length-1]?.split(',').pop()?.trim()}%`;});
-  log('DONE','','All tests complete');
+  section('DIRECT (no proxy needed — these must work)');
+  await test('Frankfurter direct','https://api.frankfurter.dev/v1/latest?from=EUR&to=USD',t=>`EUR/USD = ${JSON.parse(t).rates.USD}`);
+  await test('ECB SDW direct (DE 10Y)','https://data-api.ecb.europa.eu/service/data/YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y?lastNObservations=1&format=jsondata',t=>{const d=JSON.parse(t);const obs=d.dataSets[0].series;const v=Object.values(Object.values(obs)[0].observations).pop()[0];return `DE10Y = ${v.toFixed(3)}%`;});
+  await test('BoC direct (CA 10Y)','https://www.bankofcanada.ca/valet/observations/BD.CDN.10YR.DQ.YLD/json?recent=1',t=>{const d=JSON.parse(t);return `CA10Y = ${d.observations[0]['BD.CDN.10YR.DQ.YLD'].v}%`;});
+
+  section('YAHOO FINANCE (via corsproxy.io — must work)');
+  await test('DXY via corsproxy.io',PROXY+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `DXY = ${c[c.length-1].toFixed(2)}`;});
+  await test('VIX via corsproxy.io',PROXY+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `VIX = ${c[c.length-1].toFixed(1)}`;});
+  await test('S&P 500 via corsproxy.io',PROXY+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `SPX = ${c[c.length-1].toFixed(0)}`;});
+  await test('US 10Y (^TNX) via corsproxy.io',PROXY+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `US10Y = ${c[c.length-1].toFixed(3)}%`;});
+  await test('US short rate (^IRX) via corsproxy.io',PROXY+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EIRX?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `^IRX = ${c[c.length-1].toFixed(3)}%`;});
+  await test('Gold (GC=F) via corsproxy.io',PROXY+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1d&range=5d'),t=>{const d=JSON.parse(t);const c=d.chart.result[0].indicators.quote[0].close.filter(v=>v!=null);return `GOLD = ${c[c.length-1].toFixed(0)}`;});
+
+  section('OTHER SOURCES (via corsproxy.io)');
+  await test('MoF Japan (JP 10Y) via corsproxy.io',PROXY+encodeURIComponent('https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv'),t=>{
+    const lines=t.trim().split('\n').filter(l=>/^\d{4}\/\d{2}\/\d{2}/.test(l.split(',')[0].trim().replace(/"/g,'')));
+    if(!lines.length) return 'No date rows found';
+    const last=lines[lines.length-1].split(',');
+    return `JP10Y = ${last[10]}% (date: ${last[0]})`;
+  });
+
+  section('KNOWN BLOCKED (will show ❌ — that is expected)');
+  await test('Yahoo Finance direct (CORS blocked)',`https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=5d`,t=>'direct worked (unexpected!)');
+  await test('BoE (CORS/403 blocked)',`https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp?Travel=NIx&FromSeries=1&ToSeries=50&DAT=RNG&FD=01/01/2026&TD=01/06/2026&FNY=&CSVF=TT&html.x=66&html.y=26&SeriesCodes=IUDMNPY&UsingCodes=Y&LANG=EN&Serialise=Y`,t=>'BoE direct worked (unexpected!)');
+
+  addRow('ALL TESTS COMPLETE','ok','Check ✅ rows above — green = data will load in the dashboard');
 }
 run();
 </script></body></html>
