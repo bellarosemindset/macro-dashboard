@@ -1320,70 +1320,83 @@ function renderZScoresPage(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  MASTER LOAD — all fetches in parallel, then render
+//  RENDER ENGINE — called after data loads (or times out)
 // ═══════════════════════════════════════════════════════════════
-async function loadAll(){
+function renderAll(){
   const btn=document.getElementById('refreshBtn');
-  btn.classList.add('spinning');
-
-  // Fire all sources in parallel — no sequential blocking
-  const [
-    eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
-    eurgbp, eurchf, audnzd, usdchf,
-    dxy, vix, spx, hyg, gold,
-    us10y, us2y, us5y, us30y, t10y2y,
-    de10y, de2y,
-    uk10y,
-    jp10y_2, jp10y_10,
-    ca10y, ca2y,
-    au10y,
-  ] = await Promise.all([
-    // FX — Frankfurter (daily, free)
-    fetchFX('EUR','USD',90), fetchFX('GBP','USD',90), fetchFX('AUD','USD',90),
-    fetchFX('USD','JPY',90), fetchFX('USD','CAD',90), fetchFX('AUD','JPY',90),
-    fetchFX('EUR','GBP',90), fetchFX('EUR','CHF',90), fetchFX('AUD','NZD',90), fetchFX('USD','CHF',90),
-    // Cross-asset — Yahoo Finance (daily, free)
-    fetchYahoo('DX-Y.NYB'), fetchYahoo('^VIX'), fetchYahoo('^GSPC'),
-    fetchYahoo('HYG'), fetchYahoo('GC=F'),
-    // US Yields — Yahoo Finance (FRED API keys expired; ^TNX=10Y ^IRX=13W/short-rate ^FVX=5Y ^TYX=30Y)
-    fetchYahoo('^TNX'), fetchYahoo('^IRX'), fetchYahoo('^FVX'), fetchYahoo('^TYX'), Promise.resolve(null),
-    // EUR/DE Yields — ECB SDW (daily)
-    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'),
-    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'),
-    // UK Gilts — BoE Statistics API (daily) — IUDMNPY = 10Y nominal par yield
-    fetchBoE('IUDMNPY'),
-    // Japan JGBs — Ministry of Finance Japan CSV (daily)
-    // Col 2 = 2Y, Col 10 = 10Y in MoF CSV
-    fetchMoF(2), fetchMoF(10),
-    // Canada — Bank of Canada Valet API (daily)
-    // BD.CDN.10YR.DQ.YLD = 10Y GoC bond, BD.CDN.2YR.DQ.YLD = 2Y GoC bond
-    fetchBoC('BD.CDN.10YR.DQ.YLD'), fetchBoC('BD.CDN.2YR.DQ.YLD'),
-    // Australia — RBA (daily attempt) with FRED monthly fallback
-    fetchRBA(),
-  ]);
-
-  // Assemble state
-  S={ eurusd, gbpusd, audusd, usdjpy, usdcad, audjpy,
-      eurgbp, eurchf, audnzd, usdchf,
-      dxy, vix, spx, hyg, gold,
-      us10y, us2y, us5y, us30y, t10y2y,
-      de10y, de2y,
-      uk10y,
-      jp2y: jp10y_2, jp10y: jp10y_10,
-      ca2y, ca10y,
-      au10y };
-
+  btn.classList.remove('spinning');
   document.getElementById('ts').textContent=new Date().toLocaleString('en-GB',
     {weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-  btn.classList.remove('spinning');
-
-  const safe=(fn,name)=>{ try{ fn(); }catch(e){ console.error('Render error in '+name,e); } };
+  const safe=(fn,name)=>{ try{ fn(); }catch(e){ console.error('Render error ['+name+']:',e); } };
   safe(updateTicker,'ticker');
   safe(updateFreshnessBar,'freshness');
   safe(renderOverview,'overview');
   safe(renderMorningBriefing,'briefing');
   ['eurusd','gbpusd','audusd','usdjpy','usdcad','audjpy','eurgbp','eurchf','audnzd','usdchf'].forEach(k=>safe(()=>renderPairPage(k),'pair:'+k));
   safe(renderZScoresPage,'zscores');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MASTER LOAD — all fetches in parallel, then render
+// ═══════════════════════════════════════════════════════════════
+async function loadAll(){
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+
+  // Hard 25s master timeout — renders with whatever data arrived
+  const masterTimer=setTimeout(()=>{
+    console.warn('loadAll: 25s master timeout fired — rendering with available data');
+    renderAll();
+  },25000);
+
+  // Use Promise.allSettled so a rejected promise never blocks rendering
+  const val=r=>r.status==='fulfilled'?r.value:null;
+  const results=await Promise.allSettled([
+    // FX — Frankfurter (daily, CORS-enabled)
+    fetchFX('EUR','USD',90), fetchFX('GBP','USD',90), fetchFX('AUD','USD',90),
+    fetchFX('USD','JPY',90), fetchFX('USD','CAD',90), fetchFX('AUD','JPY',90),
+    fetchFX('EUR','GBP',90), fetchFX('EUR','CHF',90), fetchFX('AUD','NZD',90), fetchFX('USD','CHF',90),
+    // Cross-asset — Yahoo Finance via corsproxy.io
+    fetchYahoo('DX-Y.NYB'), fetchYahoo('^VIX'), fetchYahoo('^GSPC'),
+    fetchYahoo('HYG'), fetchYahoo('GC=F'),
+    // US Yields — Yahoo Finance (FRED API keys expired)
+    fetchYahoo('^TNX'), fetchYahoo('^IRX'), fetchYahoo('^FVX'), fetchYahoo('^TYX'), Promise.resolve(null),
+    // EUR/DE Yields — ECB SDW (CORS-enabled)
+    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y'),
+    fetchECB('YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y'),
+    // UK Gilts — BoE (often blocked; returns null gracefully)
+    fetchBoE('IUDMNPY'),
+    // Japan JGBs — MoF Japan CSV via corsproxy.io
+    fetchMoF(2), fetchMoF(10),
+    // Canada — BoC Valet API (CORS-enabled)
+    fetchBoC('BD.CDN.10YR.DQ.YLD'), fetchBoC('BD.CDN.2YR.DQ.YLD'),
+    // Australia — Yahoo/RBA fallback
+    fetchRBA(),
+  ]);
+
+  clearTimeout(masterTimer);
+
+  const [
+    eurusd,gbpusd,audusd,usdjpy,usdcad,audjpy,
+    eurgbp,eurchf,audnzd,usdchf,
+    dxy,vix,spx,hyg,gold,
+    us10y,us2y,us5y,us30y,t10y2y,
+    de10y,de2y,
+    uk10y,
+    jp10y_2,jp10y_10,
+    ca10y,ca2y,
+    au10y,
+  ]=results.map(val);
+
+  S={ eurusd,gbpusd,audusd,usdjpy,usdcad,audjpy,
+      eurgbp,eurchf,audnzd,usdchf,
+      dxy,vix,spx,hyg,gold,
+      us10y,us2y,us5y,us30y,t10y2y,
+      de10y,de2y,uk10y,
+      jp2y:jp10y_2,jp10y:jp10y_10,
+      ca2y,ca10y,au10y };
+
+  renderAll();
 }
 
 // ═══════════════════════════════════════════════════════════════
